@@ -12,6 +12,8 @@ function love.load()
   scalefactorx = 1
   scalefactory = scalefactorx
 
+
+
 end
 
 
@@ -39,12 +41,22 @@ end
 
 
 function love.draw()
+
 	love.graphics.draw( image,0,0) --image, x, y, r, sx, sy, ox, oy, kx, ky
 	love.graphics.draw(playerimage, playerx, playery, 0, scalefactorx, scalefactory)
-  love.graphics.draw(playergun, playergunx, playery, 0, scalefactorx, scalefactory)
+  love.graphics.draw(playergun, playergunx, playery, radians, scalefactorx, scalefactory)
 end
 
 function love.update()
-
+  if scalefactorx == -1 then
+    radians = math.pi - radians
+  end
+  if scalefactorx == -1 and love.mouse.getX() > playergunx then
+    radians = 1/radians
+  end
+  trigdis = love.mouse.getX() - playergunx
+  trigheight = love.mouse.getY() - playery
+  radians = math.atan(trigheight/trigdis)
 end
+
 
