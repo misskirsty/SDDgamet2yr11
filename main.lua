@@ -3,14 +3,12 @@ function love.load()
 	love.window.setMode(1600, 900, {resizable=true,vsync=true})
 	width = 160
 	height = 100
-	image = love.graphics.newImage('resources/farm.jpg')
-	playerimage = love.graphics.newImage('resources/Stick_figure.png')
-  	playergun = love.graphics.newImage('resources/gun.png')
+	image = love.graphics.newImage('farm.jpg')
+	playerimage = love.graphics.newImage('Stick_figure.png')
+  playergun = love.graphics.newImage('gun.png')
 	playerx = 400
 	playery = 600
-  	playergunx = playerx + 140
-  	scalefactorx = 1
-  	scalefactory = scalefactorx
+  playergunx = playerx + 140
 
 
 
@@ -23,6 +21,8 @@ function testmouse()
 end
 
 function love.keypressed(key)
+	scalefactorx = 1
+	scalefactory = scalefactorx
 	if key == 'a' then
 		playerx = playerx - 20
     scalefactorx = -1
@@ -48,15 +48,14 @@ function love.draw()
 end
 
 function love.update()
-  trigdis = love.mouse.getX() - playergunx
-  trigheight = love.mouse.getY() - playery
-  radians = math.atan(trigheight/trigdis)
+	trigdis = love.mouse.getX() - playergunx
+	trigheight = love.mouse.getY() - playery
+	radians = math.atan(trigheight/trigdis)
   if scalefactorx == -1 then
     radians = math.pi - radians
+		radians = math.atan(trigheight/trigdis)
+		if playergunx < love.mouse.getX() then
+		radians = -radians
+		end
   end
-  --if scalefactorx == -1 and love.mouse.getX() > playergunx then
-   -- radians =
-  --end
 end
-
-
