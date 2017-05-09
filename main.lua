@@ -3,14 +3,14 @@ function love.load()
 	love.window.setMode(1600, 900, {resizable=true,vsync=true})
 	width = 160
 	height = 100
-	image = love.graphics.newImage('farm.jpg')
-	playerimage = love.graphics.newImage('Stick_figure.png')
-  playergun = love.graphics.newImage('gun.png')
+	image = love.graphics.newImage('resources/farm.jpg')
+	playerimage = love.graphics.newImage('resources/Stick_figure.png')
+  	playergun = love.graphics.newImage('resources/gun.png')
 	playerx = 400
 	playery = 600
-  playergunx = playerx + 140
-  scalefactorx = 1
-  scalefactory = scalefactorx
+  	playergunx = playerx + 140
+  	scalefactorx = 1
+  	scalefactory = scalefactorx
 
 
 
