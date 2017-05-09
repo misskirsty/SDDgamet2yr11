@@ -48,15 +48,15 @@ function love.draw()
 end
 
 function love.update()
-  if scalefactorx == -1 then
-    radians = math.pi - radians
-  end
-  if scalefactorx == -1 and love.mouse.getX() > playergunx then
-    radians = 1/radians
-  end
   trigdis = love.mouse.getX() - playergunx
   trigheight = love.mouse.getY() - playery
   radians = math.atan(trigheight/trigdis)
+  if scalefactorx == -1 then
+    radians = math.pi - radians
+  end
+  --if scalefactorx == -1 and love.mouse.getX() > playergunx then
+   -- radians =
+  --end
 end
 
 
