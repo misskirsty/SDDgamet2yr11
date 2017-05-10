@@ -7,19 +7,19 @@ Zombies only walk in 1D
 Dem zombies waddle with an animation
 
 Attacking?
--	When within half of attack range zombie starts its attack animation.
--	Attack is 1/3 swinging and 2/3 cooldown animation
--	After the 1/3 swinging finishes, player within attack range of zombies is hit.
+    -	When within half of attack range zombie starts its attack animation.
+    -	Attack is 1/3 swinging and 2/3 cooldown animation
+    -	After the 1/3 swinging finishes, player within attack range of zombies is hit.
 
 Zombies types
--	Hellhound zombie
-- Shoots fireballs at player, fireballs in straight line
-- 
--	Normie zombie
-- Waddle
--	Duck zombie
-- Basically just a duck
-- not actually a zombie
-- cant attack, only quack.
+    - Hellhound zombie
+        - Shoots fireballs at player, fireballs in straight line
+        - 
+    - Normie zombie
+        - Waddle
+    - Duck zombie
+        - Basically just a duck
+        - not actually a zombie
+        - cant attack, only quack.
 
 
