@@ -1,0 +1,8 @@
+Blog 1 - 1/2/4 15:51 - matty
+  	if (zombieList[i].x - player.x < zombieList.attackrange) then
+			zombieList[i].hitplayer()
+		end
+
+Blog 2
+
+  
