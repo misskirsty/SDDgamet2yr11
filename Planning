@@ -28,3 +28,19 @@ Shop
     - Upgrade stats maybe
 
 
+
+Inventory
+
+	coin int
+
+	guns are yes/no
+	ammo as an int for each gun
+
+	pistol has infinity ammo
+
+	each gun is a class with stats about it
+
+	10 guns or something
+	gun durabilty 
+
+	health kits as int
