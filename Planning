@@ -26,8 +26,11 @@ Zombies types
 Shop
     - Buy new guns for zombies ot dorp
     - Upgrade stats maybe
-
-
+   
+Health
+	rendered up top left 
+	either saying actual health or 
+	repersentation 
 
 Inventory
 
