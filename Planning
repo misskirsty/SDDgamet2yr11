@@ -47,3 +47,53 @@ Inventory
 	gun durabilty 
 
 	health kits as int
+	
+
+
+10 guns
+
+
+
+
+
+gunList = {
+	"pistol": {name:"pistol", locked:false, maxAmmo:50, speed:10},
+	"sniper": {name:"sniper", locked:true, maxAmmo:50, speed:10}
+}
+
+gunClass is for render dropped guns, held guns and for shooting guns
+
+
+when zombie killed
+	add random gun with locked == false and name != "pistol" to droppedItems
+
+droppedItems = [actual classes of the gun]
+
+for every droppedItem
+	droppedItem.renderDropped()
+
+guns = {}
+
+when pikc up droppedItem
+	move the dorppeditem into inventory guns like 
+		"name": gunclass
+
+
+
+
+unlocked = [actual classes of each gun]
+locked = [actual classes of each gun]
+
+
+guns
+
+
+
+locked/unlocked
+
+killing gives a random unlocked
+
+dropped guns render on the ground
+
+
+ammo
