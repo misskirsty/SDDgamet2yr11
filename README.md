@@ -14,8 +14,8 @@
     - guns have ammo that when runs out can be picked up again by zombie drops
     - ammo boxes need to be better than gun drops 
       - either give more ammo than picking up a gun or one ammo type works for multiple gun types)
-    
-  Different zombie types
+      
+  - Different zombie types
     - normal
     - crawling on the ground
       - has a low and wide collision box and headshot collisions are low down
