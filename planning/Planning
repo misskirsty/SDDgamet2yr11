@@ -1,0 +1,99 @@
+Game
+
+Zombies walking from the sides
+
+Zombies are classes
+Zombies only walk in 1D
+Dem zombies waddle with an animation
+
+Attacking?
+    -	When within half of attack range zombie starts its attack animation.
+    -	Attack is 1/3 swinging and 2/3 cooldown animation
+    -	After the 1/3 swinging finishes, player within attack range of zombies is hit.
+
+Zombies types
+    - Hellhound zombie
+        - Shoots fireballs at player, fireballs in straight line
+        - 
+    - Normie zombie
+        - Waddle
+    - Duck zombie
+        - Basically just a duck
+        - not actually a zombie
+        - cant attack, only quack.
+
+
+Shop
+    - Buy new guns for zombies ot dorp
+    - Upgrade stats maybe
+   
+Health
+	rendered up top left 
+	either saying actual health or 
+	repersentation 
+
+Inventory
+
+	coin int
+
+	guns are yes/no
+	ammo as an int for each gun
+
+	pistol has infinity ammo
+
+	each gun is a class with stats about it
+
+	10 guns or something
+	gun durabilty 
+
+	health kits as int
+	
+
+
+10 guns
+
+
+
+
+
+gunList = {
+	"pistol": {name:"pistol", locked:false, maxAmmo:50, speed:10},
+	"sniper": {name:"sniper", locked:true, maxAmmo:50, speed:10}
+}
+
+gunClass is for render dropped guns, held guns and for shooting guns
+
+
+when zombie killed
+	add random gun with locked == false and name != "pistol" to droppedItems
+
+droppedItems = [actual classes of the gun]
+
+for every droppedItem
+	droppedItem.renderDropped()
+
+guns = {}
+
+when pikc up droppedItem
+	move the dorppeditem into inventory guns like 
+		"name": gunclass
+
+
+
+
+unlocked = [actual classes of each gun]
+locked = [actual classes of each gun]
+
+
+guns
+
+
+
+locked/unlocked
+
+killing gives a random unlocked
+
+dropped guns render on the ground
+
+
+ammo
