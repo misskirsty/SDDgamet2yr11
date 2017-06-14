@@ -1,0 +1,57 @@
+
+
+Are we on progress with the amount of time left
+
+What we have done
+
+What we are going to do
+
+Are we on track
+
+
+ - backbone of our game is made
+ - most major classes are made they just need to be filled in
+ 
+things added
+ - player movement
+ - dank player rendering
+   > The arms have correct rendering
+   > players are split into back arm, torso and front arm
+   > also gun
+   > arms bob based on a sine wave because we can
+ - coins
+   > can be pick up
+ - zombies
+
+things to be added
+ - player movement
+ - dank player rendering
+   > new sprites
+   > hats
+ - coins
+   > later on they will bob and spin based on two seperate sine waves becuase why not
+ - zombies
+
+
+Shooting
+Waves of zombies
+Shop at teh end of each wave
+ - at shop you can spend coins to unlock guns
+ - when guns unlocked zombies can drop them
+ - gun stats (max ammo, shooting speed, ammo dammage)
+ - can buy healthkits whic hcan be used during waves
+ - "Continue" brings you to next wave
+
+# Proper Sprites for EVERYTHING
+Basic Movement/Attack Animations
+
+Different zombie types
+  - zombies tpyes have varying health/speed/damage/collision boundaries (crawlers)
+  - 
+Shooting
+ 
+
+
+
+
+
