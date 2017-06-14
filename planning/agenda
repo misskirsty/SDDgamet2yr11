@@ -34,6 +34,12 @@ things to be added
 
 
 Shooting
+ - crosshair at player mouse
+ - shooting using raycasting to find any collsions with zombie collision boxes
+  > if points above and below line for rectangle then collison == true
+  > if perpendicular distance of line to centre of circle <= circle radius then collision == true
+  > 
+
 Waves of zombies
 Shop at teh end of each wave
  - at shop you can spend coins to unlock guns
@@ -48,9 +54,9 @@ Basic Movement/Attack Animations
 Different zombie types
   - zombies tpyes have varying health/speed/damage/collision boundaries (crawlers)
   - 
-Shooting
+Zombies have a head collision circle and body collision rectangle
+ - head collision circle does more damage (headshot)
  
-
 
 
 
