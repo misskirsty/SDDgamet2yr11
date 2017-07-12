@@ -1,7 +1,7 @@
 
 function love.load()
 
-	love.window.setMode(1600, 900, {resizable=false,vsync=true})
+	love.window.setMode(1600, 900, {resizable=false,vsync=false})
 
 
 	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair.png"), 32, 32)
@@ -31,7 +31,25 @@ function love.load()
 
 end
 
+function imageClass(src, width, height, originX, originY)	-- A class to handle images
+	local self = {}
+	self.image = love.graphics.newImage('resources/' .. src)
+	self.w = width
+	self.h = height
+	self.sx = self.w/self.image:getWidth()
+	self.sy = self.h/self.image:getHeight()
+	self.ox = originX*self.image:getWidth()	-- Offset as a decimal based on image width/height from the (0,0) render point and rotation pivot point
+	self.oy = originY*self.image:getHeight()
+	self.render = function(x, y, flipped, rotation) 	-- Renders image at position 'x','y' with rotation 'r'\
+		if (flipped == false) then
+			love.graphics.draw(self.image, x, y, rotation, self.sx, self.sy, self.ox, self.oy)
+		else
+			love.graphics.draw(self.image, x + self.w, y, rotation, -self.sx, self.sy, self.ox, self.oy)
+		end
+	end
 
+	return self
+end
 
 function playerClass()
 	local self = {}
@@ -50,11 +68,14 @@ function playerClass()
 	self.image_player_arm_back = imageClass('player_arm_back.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is player looking to the right
 
 	
+  
 	self.render = function()
+
+		linePoint = {x=(self.pos.x + self.size.w/2), y=(self.pos.y + self.size.h*0.6)}    -- Point on screen/player where shooting originates (may move depending on gun)
+
 		-- Check where mouse is relative to player to render player orientation correctly
-		--print(player.pos.x)
-		mouseOffsetX = love.mouse.getX() - (self.pos.x + self.size.w/2)
-		mouseOffsetY = love.mouse.getY() - (self.pos.y + self.size.w/2)
+		mouseOffsetX = love.mouse.getX() - linePoint.x
+		mouseOffsetY = love.mouse.getY() - linePoint.y
 
 		mouseAngle = math.atan(mouseOffsetY/mouseOffsetX)	-- Angle from player to mouse pos
 		--print(mouseAngle)
@@ -82,6 +103,25 @@ function playerClass()
 		love.graphics.rectangle( "line", self.pos.x + self.collisionBoundary.x, self.pos.y + self.collisionBoundary.y, self.collisionBoundary.w, self.collisionBoundary.h)
 		love.graphics.setColor(255, 255, 255)
 
+
+		-- Render shooting line
+		love.graphics.setColor(255, 0, 0)	-- Render small circle at line origin point
+		love.graphics.circle("fill", linePoint.x, linePoint.y, 5)
+		love.graphics.setColor(255, 255, 255)
+
+		m = math.tan(mouseAngle)    -- gradient of line
+		b = linePoint.y - (m * linePoint.x)  -- y intercept of line
+
+		renderPoint = {x=0, y=nil}		-- Point off screen where line is rendered to
+		if (mouseOffsetX > 0) then
+			renderPoint.x = 1600
+		end
+		renderPoint.y = m * renderPoint.x + b
+
+		love.graphics.setColor(0, 255, 0)
+		love.graphics.line(linePoint.x, linePoint.y, renderPoint.x, renderPoint.y)
+		love.graphics.setColor(255, 255, 255)
+
 	end
 
 	self.update = function(dt)
@@ -90,6 +130,7 @@ function playerClass()
 			if (coin.pos.x + coin.w > player.pos.x + player.collisionBoundary.x) and (coin.pos.x < player.pos.x + player.collisionBoundary.x + player.collisionBoundary.w) then
 				table.remove(coins,i)
 				inv.coins = inv.coins + 1
+        print("Picked up coin")
 			end
 		end
 
@@ -124,32 +165,12 @@ function playerClass()
 	return self
 end
 
-
-function imageClass(src, width, height, originX, originY)	-- A class to handle images
-	local self = {}
-	self.image = love.graphics.newImage('resources/' .. src)
-	self.w = width
-	self.h = height
-	self.sx = self.w/self.image:getWidth()
-	self.sy = self.h/self.image:getHeight()
-	self.ox = originX*self.image:getWidth()	-- Offset as a decimal based on image width/height from the (0,0) render point and rotation pivot point
-	self.oy = originY*self.image:getHeight()
-	self.render = function(x, y, flipped, rotation) 	-- Renders image at position 'x','y' with rotation 'r'\
-		if (flipped == false) then
-			love.graphics.draw(self.image, x, y, rotation, self.sx, self.sy, self.ox, self.oy)
-		else
-			love.graphics.draw(self.image, x + self.w, y, rotation, -self.sx, self.sy, self.ox, self.oy)
-		end
-	end
-
-	return self
-end
-
 function zombieClass()	-- Side is left/right 
 	local self = {}
-	self.pos = {x=100, y=800-256}
+	self.pos = {x=math.random()*(1600-256), y=800-256}
 	self.size = {w=256, h=256}
-	self.collisionBoundary = {x=80, y=36, w=94, h=220}	
+	self.collisionBoundary = {x=90, y=106, w=78, h=150}	
+  self.collisionHead = {x=130, y=68, r=60}
 
 	--self.image = imageClass('zombie.jpg', self.size.w, self.size.h, 0, 0)
 
@@ -158,9 +179,13 @@ function zombieClass()	-- Side is left/right
 	self.image_zombie_arm_front = imageClass('zombie_arm_front.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is zombie looking to the right
 
 
-	self.speed = 60	-- Speed in pixels per second
-
+	self.speed = 60 + math.random()*30	-- Speed in pixels per second
+  self.health = {cur=math.random()*100, max=100}  -- Current/Max HP
+  print(self.health.cur)
+  
 	self.facingDirection = "right"
+  
+  
 
 	self.render = function()
 
@@ -180,6 +205,27 @@ function zombieClass()	-- Side is left/right
 		love.graphics.setColor(255, 0, 0)
 		love.graphics.rectangle( "line", self.pos.x + self.collisionBoundary.x, self.pos.y + self.collisionBoundary.y, self.collisionBoundary.w, self.collisionBoundary.h)
 		love.graphics.setColor(255, 255, 255)
+    
+    -- Render collision head circle
+    love.graphics.setColor(255, 0, 0)
+		love.graphics.circle( "line", self.pos.x + self.collisionHead.x, self.pos.y + self.collisionHead.y, self.collisionHead.r )
+		love.graphics.setColor(255, 255, 255)
+    
+    
+    -- Render health box above head
+    love.graphics.setColor(50, 0, 0)
+		love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, 150, 20)   -- Background dark red fill
+		love.graphics.setColor(255, 255, 255)
+    barWidth = math.floor(150 * (self.health.cur/self.health.max))
+    love.graphics.setColor(255, 0, 0)
+		love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, barWidth, 20)   -- Light red actual health fill
+		love.graphics.setColor(255, 255, 255)
+    love.graphics.setLineWidth(3)
+    love.graphics.setColor(0, 0, 0)
+		love.graphics.rectangle( "line", self.pos.x+53, self.pos.y-20, 150, 20)   -- Black border around health bar
+		love.graphics.setColor(255, 255, 255)
+    
+    
 	end
 
 	self.update = function(dt)
