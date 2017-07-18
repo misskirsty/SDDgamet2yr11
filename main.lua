@@ -1,4 +1,3 @@
-
 function love.load()
 
 	love.window.setMode(1600, 900, {resizable=false,vsync=false})
@@ -6,7 +5,7 @@ function love.load()
 
 	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair.png"), 32, 32)
 	love.mouse.setCursor(crosshair)
-	
+
 	backgroundImage = imageClass("background.jpg", 1600, 900, 0, 0)
 	groundImage = imageClass("ground.png", 1600, 200, 0, 0)
 
@@ -14,6 +13,7 @@ function love.load()
 
 	player = playerClass()
 	inv = inventoryClass()
+  shop = shopClass()
 
 	zombieList = {zombieClass(), zombieClass(), zombieClass()}
 
@@ -56,8 +56,8 @@ function playerClass()
 	self.pos = {x=100, y=800-256}
 	self.size = {w=256, h=256}	-- width/height of player image in pixels
 
-	self.collisionBoundary = {x=80, y=36, w=94, h=220}		
-	
+	self.collisionBoundary = {x=80, y=36, w=94, h=220}
+
 	self.walkTime = 0		-- How long player has been walking for in seconds
 	self.speed = 200		-- Pixels per second
 
@@ -67,8 +67,8 @@ function playerClass()
 	self.image_player_arm_front = imageClass('player_arm_front.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is player looking to the right
 	self.image_player_arm_back = imageClass('player_arm_back.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is player looking to the right
 
-	
-  
+
+
 	self.render = function()
 
 		linePoint = {x=(self.pos.x + self.size.w/2), y=(self.pos.y + self.size.h*0.6)}    -- Point on screen/player where shooting originates (may move depending on gun)
@@ -165,11 +165,11 @@ function playerClass()
 	return self
 end
 
-function zombieClass()	-- Side is left/right 
+function zombieClass()	-- Side is left/right
 	local self = {}
 	self.pos = {x=math.random()*(1600-256), y=800-256}
 	self.size = {w=256, h=256}
-	self.collisionBoundary = {x=90, y=106, w=78, h=150}	
+	self.collisionBoundary = {x=90, y=106, w=78, h=150}
   self.collisionHead = {x=130, y=68, r=60}
 
 	--self.image = imageClass('zombie.jpg', self.size.w, self.size.h, 0, 0)
@@ -182,10 +182,10 @@ function zombieClass()	-- Side is left/right
 	self.speed = 60 + math.random()*30	-- Speed in pixels per second
   self.health = {cur=math.random()*100, max=100}  -- Current/Max HP
   print(self.health.cur)
-  
+
 	self.facingDirection = "right"
-  
-  
+
+
 
 	self.render = function()
 
@@ -205,13 +205,13 @@ function zombieClass()	-- Side is left/right
 		love.graphics.setColor(255, 0, 0)
 		love.graphics.rectangle( "line", self.pos.x + self.collisionBoundary.x, self.pos.y + self.collisionBoundary.y, self.collisionBoundary.w, self.collisionBoundary.h)
 		love.graphics.setColor(255, 255, 255)
-    
+
     -- Render collision head circle
     love.graphics.setColor(255, 0, 0)
 		love.graphics.circle( "line", self.pos.x + self.collisionHead.x, self.pos.y + self.collisionHead.y, self.collisionHead.r )
 		love.graphics.setColor(255, 255, 255)
-    
-    
+
+
     -- Render health box above head
     love.graphics.setColor(50, 0, 0)
 		love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, 150, 20)   -- Background dark red fill
@@ -224,8 +224,8 @@ function zombieClass()	-- Side is left/right
     love.graphics.setColor(0, 0, 0)
 		love.graphics.rectangle( "line", self.pos.x+53, self.pos.y-20, 150, 20)   -- Black border around health bar
 		love.graphics.setColor(255, 255, 255)
-    
-    
+
+
 	end
 
 	self.update = function(dt)
@@ -259,10 +259,17 @@ end
 function inventoryClass()
 	local self = {}
 	self.coins = 0
-
 	self.healthKits = 0
-	self.gun = {pistol = gunClass("pistol")}    -- Player starts with pistol
-
+	inventoryRender = false
+	self.gun = {pistol}    -- Player starts with pistol
+	self.render = function()
+		if inventoryRender == true then
+			love.graphics.setColor(0,0,0,150)
+			love.graphics.rectangle("fill",100, 100, 1200,500)
+			love.graphics.setColor(255,255,255)
+			love.graphics.print("Your inventory", 150, 150, 0, 1.5, 1.5)
+		end
+	end
 	return self
 end
 
@@ -282,6 +289,34 @@ function gunClass(name)   -- guntype, gundamage, gundurability, gunprice
 	return self
 end
 
+function shopClass()
+  local self = {}
+  shopRender = false
+	shopImage1 = love.graphics.newImage("resources/ak47.png")
+  self.render = function()
+    if shopRender == true then
+			--- main area ---
+			love.graphics.setColor(255,255,255,100)
+			love.graphics.rectangle("fill",100, 100, 1200,500)
+			love.graphics.setColor(0,0,0)
+			love.graphics.print("Welcome to the shop", 150, 150, 0, 1.5, 1.5)
+			love.graphics.setColor(255,255,255)
+			--- ak47 part ---
+			love.graphics.draw(shopImage1, 200, 200, 0, 0.30, 0.30)
+			love.graphics.setColor(0,0,0)
+			love.graphics.rectangle("line", 200, 200, 160, 160)
+			love.graphics.setColor(255,255,255)
+			love.graphics.print("Buy: ak47", 210, 370)
+			if love.mouse.getX() > 200 and love.mouse.getX() < 360 and love.mouse.getY() > 200 and love.mouse.getY() < 360 then
+				love.graphics.setColor(131,131,131, 100)
+				love.graphics.rectangle("fill", 200, 200, 160, 160)
+				love.graphics.setColor(255,255,255)
+			end
+			--- machine gun part ---
+    end
+	end
+  return self
+end
 
 function love.draw()
 
@@ -293,12 +328,14 @@ function love.draw()
 	for i,zombie in ipairs(zombieList) do
 		zombie.render()
 	end
-	
+
 
 	--- Player Rendering ---
 	player.render()
-	
-	
+	--- Shop Rendering ---
+	shop.render()
+	--- Player inventory Rendering ---
+	inv.render()
 	--- Coin rendering ---
 	for i,coin in ipairs(coins) do
 		coin.image.render(coin.pos.x, coin.pos.y, false, 0)
@@ -327,9 +364,20 @@ function love.update(dt)
 
 end
 
-function love.keypressed(key)	
+function love.keypressed(key)
 	if key == 'k' then	-- Add coin to random x value when "k" is pressed
 		table.insert(coins, coinClass(math.floor(math.random()*1600)))
+	end
+	if key == 't' and shopRender == false then
+		shopRender = true
+	else
+		shopRender = false
+	end
+
+	if key == 'i' and inventoryRender == false then
+		inventoryRender = true
+	else
+		inventoryRender = false
 	end
 end
 
@@ -342,17 +390,9 @@ function tableLength(table)
 	end
 	return count
 end
-
 --[[
-
 	3 layers for player rendering
 		1. Player back hand
 		2. Player head + torso + legs
 		3. Player front arm + gun
-
-	
-
-
-
-
 --]]
