@@ -1,21 +1,23 @@
 
 function love.load()
   
+  gunShot = love.audio.newSource("resources/sound/pistol_shot.ogg", "static")
   
   -- Probably have 9 or less guns, one for each num key 1-9 and 0 for grenades
   gunList = {   -- Stats about each gun
   -- perclick is whether or not gun shoots once per click or if it can be held down to shoot
   -- speed is minimum time between bullet shots (doesn't matter whether perclick is true or not)
-		pistol =	{num=1,   locked=false, dmg=10,    maxammo=100, speed=10, 	price=0,    perclick=true,    penetration=1,    lowerImage="lowerImage/glock.png"},
-		ak47 =		{num=2,   locked=false, dmg=10,    maxammo=30, 	speed=30, 	price=30,   perclick=false,   penetration=1,    lowerImage="lowerImage/ak47.png"},
-    machine =	{num=3,   locked=false, 	dmg=10,  maxammo=50, 	speed=100, 	price=100,  perclick=false,   penetration=1,    lowerImage="lowerImage/machine.png"},
-    sniper =	{num=4,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    lowerImage="lowerImage/ak47.png"},
-    magnum =	{num=5,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    lowerImage="lowerImage/ak47.png"},
-    rocket =	{num=6,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    lowerImage="lowerImage/ak47.png"}
+		pistol =	{num=1,   locked=false, dmg=10,    maxammo=100, speed=10, 	price=0,    perclick=true,    penetration=1,    imgSrc="lowerImage/glock.png",    name="Pistol"},
+		ak47 =		{num=2,   locked=false, dmg=10,    maxammo=30, 	speed=30, 	price=30,   perclick=false,   penetration=1,    imgSrc="lowerImage/ak47.png",     name="AK47"},
+    machine =	{num=3,   locked=false, dmg=10,   maxammo=50, 	speed=100, 	price=100,  perclick=false,   penetration=1,    imgSrc="lowerImage/machine.png",  name="Machine Gun"},
+    sniper =	{num=4,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    imgSrc="lowerImage/ak47.png",     name="Sniper Rifle"},
+    magnum =	{num=5,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    imgSrc="lowerImage/ak47.png",     name="Magnum"},
+    rocket =	{num=6,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    imgSrc="lowerImage/ak47.png",     name="Rocket Launcher"}
 	}
   
   for i,gun in pairs(gunList) do
-    gun.lowerImage = imageClass(gun.lowerImage, 100, 100, 0, 0)
+    gun.lowerImage = imageClass(gun.imgSrc, 100, 100, 0, 0)
+    gun.shopImage = imageClass(gun.imgSrc, 175, 175, 0, 0)
   end
   
 
@@ -32,14 +34,16 @@ function love.load()
 	player = playerClass()
 	inv = inventoryClass()
   shop = shopClass()
+  waveHandler = waveClass()
 
-	zombieList = {zombieClass()}--, zombieClass(), zombieClass()}
+	zombieList = {}
 
 	coins = {coinClass(900)}
   
   
   -- Lock Image for lower gun bar
-  lockImage = imageClass("lowerImage/lock.png", 100, 100, 0, 0)
+  lockImageInv = imageClass("lowerImage/lock.png", 100, 100, 0, 0)
+  lockImageShop = imageClass("lowerImage/lock.png", 175, 175, 0, 0)
 
 end
 
@@ -65,7 +69,7 @@ end
 
 function playerClass()
 	local self = {}
-	self.pos = {x=1200, y=800-256}
+	self.pos = {x=1200, y=800-356}
 	self.size = {w=256, h=256}	-- width/height of player image in pixels
 
 	self.collisionBody = {x=80, y=36, w=94, h=220}		
@@ -197,6 +201,10 @@ function playerClass()
         self.mouseDown = true
         
         --print("Player clicked")
+        gunShot:setVolume(0.5)
+        gunShot:stop()
+        gunShot:play()
+
         
         for i,zombie in ipairs(zombieList) do
           zombieHit = zombie.isHit()    -- Returns either false, or table with {part="head" or "body", x=x pos of collision, y=y pos of collision}
@@ -208,6 +216,19 @@ function playerClass()
             elseif (zombieHit.part == "body") then
               zombie.health.cur = zombie.health.cur - inv.guns[inv.selectedGun].dmg
             end
+            
+            -- Push zombie back because he was hit
+            if self.mouseOffset.x >= 0 then   -- Player shooting to right, push zombie to right
+              zombie.knockbackVelocity = 200
+            else
+              zombie.knockbackVelocity = -200
+            end
+            
+            -- Make zombie die maybe
+            if (zombie.health.cur <= 0) then
+              print("Zombie has died")
+            end
+            
           end
         end
         
@@ -287,52 +308,76 @@ end
 
 function zombieClass()	-- Side is left/right 
 	local self = {}
-	self.pos = {x=256, y=800-256}
 	self.size = {w=256, h=256}  -- Rendering image size of entire zombie
+	self.pos = {x={-self.size.w, 1600}, y=800-356}
+  self.pos.x = self.pos.x[math.random(1,2)]
+  
 	self.collisionBody = {x=60, y=106, w=130, h=150}	-- Rectangle that represents collision boundary of body for shooting (assume zombie is facing right)
   self.collisionHead = {x=91, y=40, w=100, h=100}   -- Rectangle that represents collision boundary of head for shooting (assume zombie is facing right)
 
 
   -- Image Rendering Variables --
-	self.image_zombie_arm_back = imageClass('zombie_arm_back.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is zombie looking to the right
-	self.image_zombie_torso = imageClass('zombie_torso.png', self.size.w, self.size.h, 0, 0)		-- Default image is zombie looking to the right
-	self.image_zombie_arm_front = imageClass('zombie_arm_front.png', self.size.w, self.size.h, 0.5, 0.6)		-- Default image is zombie looking to the right
+	self.image_zombie_arm_back = imageClass('zombie_arm_back.png', self.size.w, self.size.h, 0.53, 0.53)		-- Default image is zombie looking to the right
+	self.image_zombie_torso = imageClass('zombie_torso.png', self.size.w, self.size.h, 0.5, 0.73)		-- Default image is zombie looking to the right
+	self.image_zombie_arm_front = imageClass('zombie_arm_front.png', self.size.w, self.size.h, 0.35, 0.56)		-- Default image is zombie looking to the right
 
 
 	self.speed = 50 + math.random()*25	-- Speed in pixels per second
   self.health = {cur=100, max=100}  -- Current/Max HP
   
-	self.facingDirection = "right"
+	self.facingDirection = nil
   
   -- Actual screen position of zombie collision boundaries when rendered on the screen
   self.collisionBodyScreenPos = {x=nil, y=nil}
   self.collisionHeadScreenPos = {x=nil, y=nil}
   
+  -- Zombie knockback variables
+  self.knockbackVelocity = 0    -- pixels moved per second due to knockback velocity
+  self.knockbackFriction = 200    -- knockbackVelocity lost per second
+  
+  -- Zombie Attack Variables --
+  self.attackTime = 0
+ 
+  self.aliveTime = 0    -- The number of seconds the since the zombie began updating
 
 	self.render = function()
+    
+    local touchingPlayer = self.touchingPlayer()
+    
+    local armSwing = nil
+    if touchingPlayer then
+      armSwing = math.sin(self.aliveTime*5) * 0.5 + 0.3
+    else
+      armSwing = math.sin(self.aliveTime*2) * 0.2
+    end
 
 		if (self.facingDirection == "right") then	-- Zombie is facing the right
-			self.image_zombie_arm_back.render(self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.6, false, 0)	-- Draw back arm
-			self.image_zombie_torso.render(self.pos.x, self.pos.y, false, 0)	-- Draw zombie looking right
-			self.image_zombie_arm_front.render(self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.6, false, 0)	-- Draw front arm
+			self.image_zombie_arm_back.render(self.pos.x + self.size.w*0.53, self.pos.y + self.size.h*0.53, false, armSwing)	-- Draw back arm
+			self.image_zombie_torso.render(self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.73, false, -1)	-- Draw zombie looking right
+			self.image_zombie_arm_front.render(self.pos.x + self.size.w*0.35, self.pos.y + self.size.h*0.56, false, -armSwing)	-- Draw front arm
+      
+      love.graphics.setColor(255, 0, 0)	
+      love.graphics.circle("fill", self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.73, 5)
+      love.graphics.setColor(255, 255, 255)
 
 		else -- Mouse is to the left of players center x
-			self.image_zombie_arm_back.render(self.pos.x - self.size.w*0.5, self.pos.y + self.size.h*0.6, true, 0)	-- Draw back arm
+			self.image_zombie_arm_back.render(self.pos.x - self.size.w*0.53, self.pos.y + self.size.h*0.53, true, -armSwing)	-- Draw back arm
 			self.image_zombie_torso.render(self.pos.x, self.pos.y, true, 0)	-- Draw zombie looking left
-			self.image_zombie_arm_front.render(self.pos.x - self.size.w*0.5, self.pos.y + self.size.h*0.6, true, 0)	-- Draw front arm
+			self.image_zombie_arm_front.render(self.pos.x - self.size.w*0.35, self.pos.y + self.size.h*0.56, true, armSwing)	-- Draw front arm
 		end
 
 
-		-- Render collison boundary body rectangle
-		love.graphics.setColor(255, 0, 0)
-    love.graphics.rectangle( "line", self.collisionBodyScreenPos.x, self.collisionBodyScreenPos.y, self.collisionBody.w, self.collisionBody.h)
-		love.graphics.setColor(255, 255, 255)
-    
-    -- Render collision boundary head rectangle
-    love.graphics.setColor(255, 100, 0)
-		love.graphics.rectangle( "line", self.collisionHeadScreenPos.x, self.collisionHeadScreenPos.y, self.collisionHead.w, self.collisionHead.h)
-		love.graphics.setColor(255, 255, 255)
-    
+    if false then
+      -- Render collison boundary body rectangle
+      love.graphics.setColor(255, 0, 0)
+      love.graphics.rectangle( "line", self.collisionBodyScreenPos.x, self.collisionBodyScreenPos.y, self.collisionBody.w, self.collisionBody.h)
+      love.graphics.setColor(255, 255, 255)
+      
+      -- Render collision boundary head rectangle
+      love.graphics.setColor(255, 100, 0)
+      love.graphics.rectangle( "line", self.collisionHeadScreenPos.x, self.collisionHeadScreenPos.y, self.collisionHead.w, self.collisionHead.h)
+      love.graphics.setColor(255, 255, 255)
+    end
     
     -- Render health box above head
     love.graphics.setColor(50, 0, 0)
@@ -353,6 +398,39 @@ function zombieClass()	-- Side is left/right
 
 	self.update = function(dt)
     
+    self.aliveTime = self.aliveTime + dt
+    
+    local touchingPlayer = self.touchingPlayer()
+    
+      --- Zombie movement ---
+		local moveSpeed = self.speed
+		if touchingPlayer then
+			moveSpeed = 0
+		end
+
+		if (self.pos.x + self.size.w/2 < player.pos.x + player.size.w/2) then		-- If zombie is to the left of player
+			self.facingDirection = "right"
+      self.pos.x = self.pos.x + moveSpeed*dt
+		else    -- Zombie is to the right of player
+			self.facingDirection = "left"
+      self.pos.x = self.pos.x - moveSpeed*dt
+		end
+  
+  
+      --- Zombie knockback ---
+    self.pos.x = self.pos.x + self.knockbackVelocity * dt   -- Move zombie if it has knockback velocity
+    if math.abs(self.knockbackVelocity) <= self.knockbackFriction * dt then    -- Remove all zombie knockback velocity if velocity is small enough
+      self.knockbackVelocity = 0
+    else
+      if self.knockbackVelocity > 0 then   -- Slow down knockback velocity to the right
+        self.knockbackVelocity = self.knockbackVelocity - self.knockbackFriction * dt
+      elseif self.knockbackVelocity < 0 then   -- Slow down knockback velocity to the left
+        self.knockbackVelocity = self.knockbackVelocity + self.knockbackFriction * dt
+      end
+    end
+    
+    
+      --- Update Collision Boundary after moving ---
     -- Actual screen position of zombie collision boundaries must be updated each frame based on position of zombie and which way it is facing
     self.collisionBodyScreenPos = {x=nil, y=self.pos.y + self.collisionBody.y}
     self.collisionHeadScreenPos = {x=nil, y=self.pos.y + self.collisionHead.y}
@@ -361,27 +439,18 @@ function zombieClass()	-- Side is left/right
       -- Set collision boundaries x for when zombie is facing right
       self.collisionBodyScreenPos.x = self.pos.x + self.collisionBody.x
       self.collisionHeadScreenPos.x = self.pos.x + self.collisionHead.x
-
 		else -- Zombie is facing the left
       -- Set collision boundaries x for when zombie is facing left
       self.collisionBodyScreenPos.x = self.pos.x + self.size.w - self.collisionBody.x - self.collisionBody.w
       self.collisionHeadScreenPos.x = self.pos.x + self.size.w - self.collisionHead.x - self.collisionHead.w
 		end
-    
-    
-    
-		local moveSpeed = self.speed
-		if self.touchingPlayer() then
-			moveSpeed = 0
-		end
 
-		if (self.pos.x + self.size.w/2 < player.pos.x + player.size.w/2) then		-- If zombie is to the left of player
-			self.facingDirection = "right"
-			self.pos.x = self.pos.x + moveSpeed*dt
-		else
-			self.facingDirection = "left"
-			self.pos.x = self.pos.x - moveSpeed*dt
-		end
+
+      --- Zombie attacking player ---
+    if touchingPlayer then
+      
+    end
+    
 	end
   
   self.isHit = function()  -- Returns either "body" or "head" or false depending on how players shootingLine is passing through it.
@@ -437,12 +506,42 @@ function inventoryClass()
   print(self.guns["ak47"])
   
 	self.inventoryRender = false
+  
+  
 
 	self.render = function()
-    love.graphics.setColor(0,0,0,150)
-    love.graphics.rectangle("fill",100, 100, 1200,500)
-    love.graphics.setColor(255,255,255)
-    love.graphics.print("Your inventory", 150, 150, 0, 1.5, 1.5)
+    
+    
+    
+    for gunName,gun in pairs(gunList) do   -- for every gun in gunList, render in gunBar down below
+      
+      local imagePos = {x=300 + gun.num*110, y=785}
+      
+      love.graphics.setColor(105, 109, 114)
+      love.graphics.rectangle("fill", imagePos.x, imagePos.y, 100, 100)
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.rectangle("line", imagePos.x, imagePos.y, 100, 100)
+      love.graphics.setColor(255, 255, 255)
+      
+      
+      --local imagePos = {x=300 + gun.num*100, y=785}
+        --- Render gun images ---
+      if (gun.locked) then
+        lockImageInv.render(imagePos.x, imagePos.y, false, 0)
+      elseif (inv.guns[gunName] == nil) then
+        love.graphics.setColor(0,0,0)
+        gun.lowerImage.render(imagePos.x, imagePos.y, false, 0)
+        love.graphics.setColor(255,255,255)
+      else
+        gun.lowerImage.render(imagePos.x, imagePos.y, false, 0)
+        
+        -- Render number used to select gun
+        love.graphics.setNewFont(24)
+        love.graphics.print(gun.num, imagePos.x + 10, imagePos.y)
+      end
+      
+    end
+    
 	end
   
 	return self
@@ -463,26 +562,57 @@ function shopClass()
   self.render = function()
     --- main area ---
     love.graphics.setColor(255,255,255,100)
-    love.graphics.rectangle("fill",100, 100, 1200,500)
+    love.graphics.rectangle("fill",100, 100, 1400, 500)
     love.graphics.setColor(0,0,0)
     love.graphics.print("Welcome to the shop", 150, 150, 0, 1.5, 1.5)
     love.graphics.setColor(255,255,255)
     
     
-    --- ak47 part ---
-    --love.graphics.draw(self.shopImage1, 200, 200, 0, 0.30, 0.30)
-    self.ak47Image.render(200, 200, false, 0)	
+      --- Render Guns Images ---
+    for gunName,gun in pairs(gunList) do   -- for every gun in gunList, render in gunBar down below
+      
+      local imagePos = {x=200 + (gun.num-1)*175, y=200}
+      local imageSize = {w=175, h=175}
+      
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.rectangle("line", imagePos.x, imagePos.y, imageSize.w, imageSize.h)
+      love.graphics.setColor(255, 255, 255)
+      
+      
     
-    love.graphics.setColor(0,0,0)
-    love.graphics.rectangle("line", 200, 200, 160, 160)
-    love.graphics.setColor(255,255,255)
-    love.graphics.print("Buy: ak47", 210, 370)
-    if love.mouse.getX() > 200 and love.mouse.getX() < 360 and love.mouse.getY() > 200 and love.mouse.getY() < 360 then
-      love.graphics.setColor(131,131,131, 100)
-      love.graphics.rectangle("fill", 200, 200, 160, 160)
-      love.graphics.setColor(255,255,255)
+        --- Render gun images ---
+      if (gun.locked) then
+        lockImageShop.render(imagePos.x, imagePos.y, false, 0)
+      elseif (inv.guns[gunName] == nil) then
+        love.graphics.setColor(0,0,0)
+        gun.shopImage.render(imagePos.x, imagePos.y, false, 0)
+        love.graphics.setColor(255,255,255)
+      else
+        gun.shopImage.render(imagePos.x, imagePos.y, false, 0)
+      end
+      
+      -- Darken gun boxes on hover
+      if (imagePos.x <= love.mouse.getX() and love.mouse.getX() <= imagePos.x + imageSize.w) then
+        if (imagePos.y <= love.mouse.getY() and love.mouse.getY() <= imagePos.y + imageSize.h) then
+          love.graphics.setColor(0, 0, 0, 100)
+          love.graphics.rectangle("fill", imagePos.x, imagePos.y, imageSize.w, imageSize.h)
+          love.graphics.setColor(255, 255, 255)
+        end
+      end
+      
+      
+      if gun.locked then
+        -- Gun is locked so say "Buy Gun"
+        love.graphics.setNewFont(18)
+        love.graphics.print("Buy \n" .. gun.name, imagePos.x + 10, imagePos.y + imageSize.w + 5)
+      else
+          -- Gun is unlocked so say "Bought Gun"
+        love.graphics.setNewFont(18)
+        love.graphics.print("Bought \n" .. gun.name, imagePos.x + 10, imagePos.y + imageSize.w + 5)
+      end
+      
     end
-    --- machine gun part ---
+    
 	end
   
   return self
@@ -492,7 +622,7 @@ function coinClass(xPos)
 	local self = {} --just a couple things once zombies are added
 	self.w = 20  	--this can be more in detail
 	self.h = 20
-	self.pos = {x=xPos, y=800-self.h}
+	self.pos = {x=xPos, y=800-self.h-100}
 	self.image = imageClass('coin.png', self.w, self.h, 0, 0)
 	return self
 end
@@ -507,11 +637,57 @@ function gunClass(name)   -- References "gunList" variable defined at the top fo
 	return self
 end
 
+function waveClass()   -- handles waves
+	local self = {}
+  
+  self.waveNum = 1
+  self.startTime = 3   -- Time needed to wait before any zombie start spawning
+  
+  self.waveInfo = {
+      {count = 10, spawnTime = 1},
+      {count = 15, spawnTime = 0.9},
+      {count = 20, spawnTime = 0.8}
+  }
+
+  self.zombieSpawnTime = 0
+
+  self.update = function(dt)    -- Runs every frame, spawns zombies when it should happen
+    
+    if (self.startTime >= 0) then   -- Dont spawn zombies until a set time has passed at the start of each wave
+      self.startTime = self.startTime - dt
+    else
+      
+      if (self.waveInfo[self.waveNum].count == 0) then -- If enough zombies have been spawned in wave
+        if (tableLength(zombieList) == 0) then
+          self.waveNum = self.waveNum + 1
+          self.startTime = 3
+        end
+      else  -- Start spawning zombies
+      
+        if self.zombieSpawnTime <= 0 then   -- Spawn a zombie if zombe spawn time has ran out
+          
+          self.zombieSpawnTime = self.waveInfo[self.waveNum].spawnTime
+          self.waveInfo[self.waveNum].count = self.waveInfo[self.waveNum].count - 1
+          
+          table.insert(zombieList, zombieClass())
+          
+        else
+          
+          self.zombieSpawnTime = self.zombieSpawnTime - dt
+          
+        end
+      end
+    end
+  end
+  
+	return self
+end
+
 
 function love.draw()
 
 	backgroundImage.render(0, 0, false, 0)	-- Render the background
-	groundImage.render(0, 700, false, 0)	-- Render the ground
+	groundImage.render(0, 600, false, 0)	-- Render the ground
 
 
     --- Zombie Rendering ---
@@ -528,26 +704,6 @@ function love.draw()
 	for i,coin in ipairs(coins) do
 		coin.image.render(coin.pos.x, coin.pos.y, false, 0)
 	end
-  
-  
-    --- Lower Gun Bar Rendering ---
-  for gunName,gun in pairs(gunList) do   -- for every gun in gunList, render in gunBar down below
-    local imagePos = {x=300 + gun.num*100, y=785}
-    
-    if (gun.locked) then
-      lockImage.render(imagePos.x, imagePos.y, false, 0)
-    elseif (inv.guns[gunName] == nil) then
-      love.graphics.setColor(0,0,0)
-      gun.lowerImage.render(imagePos.x, imagePos.y, false, 0)
-      love.graphics.setColor(255,255,255)
-    else
-      gun.lowerImage.render(imagePos.x, imagePos.y, false, 0)
-      
-      -- Render number used to select gun
-      love.graphics.setNewFont(24)
-      love.graphics.print(gun.num, imagePos.x + 10, imagePos.y)
-    end
-  end
 
   
     --- Shop Rendering ---
@@ -556,10 +712,8 @@ function love.draw()
   end
   
     --- Inv Rendering ---
-  if inv.inventoryRender then
-    inv.render()
-  end
-	
+  inv.render()
+
 	
 
 
@@ -574,6 +728,8 @@ function love.draw()
 end
 
 function love.update(dt)
+
+  waveHandler.update(dt)
 
 	-- Update all zombies --
 	for i,zombie in ipairs(zombieList) do
