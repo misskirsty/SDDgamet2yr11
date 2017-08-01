@@ -1,11 +1,11 @@
 
 function love.load()
-  
+
   require("player")
   require("zombie")
-  
+
   gunShot = love.audio.newSource("resources/sound/pistol_shot.ogg", "static")
-  
+
   -- Probably have 9 or less guns, one for each num key 1-9 and 0 for grenades
   gunList = {   -- Stats about each gun
   -- perclick is whether or not gun shoots once per click or if it can be held down to shoot
@@ -17,25 +17,31 @@ function love.load()
     magnum =	{num=5,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    imgSrc="lowerImage/ak47.png",     name="Magnum"},
     rocket =	{num=6,   locked=true, 	dmg=10,    maxammo=10, 	speed=10, 	price=30,   perclick=true,    penetration=1,    imgSrc="lowerImage/ak47.png",     name="Rocket Launcher"}
 	}
-  
+
   for i,gun in pairs(gunList) do
     gun.lowerImage = imageClass(gun.imgSrc, 100, 100, 0, 0)
     gun.shopImage = imageClass(gun.imgSrc, 175, 175, 0, 0)
   end
-  
+
 
 	love.window.setMode(1600, 900, {resizable=false,vsync=false})
 
 	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair48.png"), 24, 24)
 	love.mouse.setCursor(crosshair)
-	
+
 	backgroundImage = imageClass("background.jpg", 1600, 900, 0, 0)
 	groundImage = imageClass("ground.png", 1600, 300, 0, 0)
   groundLowerImage = imageClass("ground_lower.png", 1600, 190, 0, 0)
+  tutorialImage = imageClass("Tutorial.png", 1600, 900, 0, 0)
+
+  font = love.graphics.setNewFont('resources/AsparagusSprouts.ttf', 50)
+  mainFont = love.graphics.setNewFont('resources/Moonlight.ttf', 25)
 
 	droppedItems = {}
 
   main = mainClass()
+
+  esc = escGameClass()
 
 	player = playerClass()
 
@@ -43,11 +49,13 @@ function love.load()
   shop = shopClass()
   waveHandler = waveClass()
 
+  tut = tutorialClass()
+
 	zombieList = {}
 
 	coins = {coinClass(900)}
-  
-  
+
+
   -- Lock Image for lower gun bar
   lockImageInv = imageClass("lowerImage/lock.png", 100, 100, 0, 0)
   lockImageShop = imageClass("lowerImage/lock.png", 175, 175, 0, 0)
@@ -78,37 +86,37 @@ function inventoryClass()
 	local self = {}
 	self.coins = 0
 	self.healthKits = 0
-  
+
   --[[
     Gun stats are stored in global "gunList" table
     Each wave, player starts with a single pistol gun, they can pick up more guns as they go
     These temporary gun class instances are stored in inv.guns table.
   --]]
-	self.guns = {pistol = gunClass("pistol")}    -- Player starts with pistol and with gun 1 selected 
+	self.guns = {pistol = gunClass("pistol")}    -- Player starts with pistol and with gun 1 selected
   self.selectedGun = "pistol"
-  
+
   print(self.guns["pistol"])
   print(self.guns["ak47"])
-  
+
 	self.inventoryRender = false
-  
-  
+
+
 
 	self.render = function()
-    
-    
-    
+
+
+
     for gunName,gun in pairs(gunList) do   -- for every gun in gunList, render in gunBar down below
-      
+
       local imagePos = {x=300 + gun.num*110, y=785}
-      
+
       love.graphics.setColor(105, 109, 114)
       love.graphics.rectangle("fill", imagePos.x, imagePos.y, 100, 100)
       love.graphics.setColor(0, 0, 0)
       love.graphics.rectangle("line", imagePos.x, imagePos.y, 100, 100)
       love.graphics.setColor(255, 255, 255)
-      
-      
+
+
       --local imagePos = {x=300 + gun.num*100, y=785}
         --- Render gun images ---
       if (gun.locked) then
@@ -119,31 +127,31 @@ function inventoryClass()
         love.graphics.setColor(255,255,255)
       else
         gun.lowerImage.render(imagePos.x, imagePos.y, false, 0)
-        
+
         -- Render number used to select gun
         love.graphics.setNewFont(24)
         love.graphics.print(gun.num, imagePos.x + 10, imagePos.y)
       end
-      
+
     end
-    
+
 	end
-  
+
 	return self
 end
 
 function shopClass()
   local self = {}
   self.shopRender = false
-	
-  
+
+
   --self.shopImage1 = love.graphics.newImage("resources/ak47.png")
   self.ak47Image = imageClass('ak47.png', 150, 150, 0, 0)
-  
-  
+
+
   --src, width, height, originX, originY
-  
-  
+
+
   self.render = function()
     --- main area ---
     love.graphics.setColor(255,255,255,100)
@@ -151,20 +159,20 @@ function shopClass()
     love.graphics.setColor(0,0,0)
     love.graphics.print("Welcome to the shop", 150, 150, 0, 1.5, 1.5)
     love.graphics.setColor(255,255,255)
-    
-    
+
+
       --- Render Guns Images ---
     for gunName,gun in pairs(gunList) do   -- for every gun in gunList, render in gunBar down below
-      
+
       local imagePos = {x=200 + (gun.num-1)*175, y=200}
       local imageSize = {w=175, h=175}
-      
+
       love.graphics.setColor(0, 0, 0)
       love.graphics.rectangle("line", imagePos.x, imagePos.y, imageSize.w, imageSize.h)
       love.graphics.setColor(255, 255, 255)
-      
-      
-    
+
+
+
         --- Render gun images ---
       if (gun.locked) then
         lockImageShop.render(imagePos.x, imagePos.y, false, 0)
@@ -175,7 +183,7 @@ function shopClass()
       else
         gun.shopImage.render(imagePos.x, imagePos.y, false, 0)
       end
-      
+
       -- Darken gun boxes on hover
       if (imagePos.x <= love.mouse.getX() and love.mouse.getX() <= imagePos.x + imageSize.w) then
         if (imagePos.y <= love.mouse.getY() and love.mouse.getY() <= imagePos.y + imageSize.h) then
@@ -184,8 +192,8 @@ function shopClass()
           love.graphics.setColor(255, 255, 255)
         end
       end
-      
-      
+
+
       if gun.locked then
         -- Gun is locked so say "Buy Gun"
         love.graphics.setNewFont(18)
@@ -195,11 +203,11 @@ function shopClass()
         love.graphics.setNewFont(18)
         love.graphics.print("Bought \n" .. gun.name, imagePos.x + 10, imagePos.y + imageSize.w + 5)
       end
-      
+
     end
-    
+
 	end
-  
+
   return self
 end
 
@@ -215,20 +223,20 @@ end
 
 function gunClass(name)   -- References "gunList" variable defined at the top for stats on each gun
 	local self = {}
-  
+
   self.name = name
   self.dmg = gunList[name].dmg
-  
+
 	return self
 end
 
 function waveClass()   -- handles waves
 	local self = {}
-  
+
   self.waveNum = 1
   self.startTime = 3   -- Time needed to wait before any zombie start spawning
   self.zombieSpawnTime = self.startTime
-  
+
   self.waveInfo = {
       {count = 10, spawnTime = 1},
       {count = 15, spawnTime = 0.9},
@@ -236,16 +244,16 @@ function waveClass()   -- handles waves
   }
 
   self.waveTime = 0
-  
+
   self.textFadeIn = 2
   self.textFadeOut = 1
-  
+
 
 
   self.update = function(dt)    -- Runs every frame, spawns zombies when it should happen
-    
+
     self.waveTime = self.waveTime + dt
-      
+
     if (self.waveInfo[self.waveNum].count == 0) then -- If enough zombies have been spawned in wave
       if (#zombieList == 0) then
         self.waveNum = self.waveNum + 1
@@ -253,69 +261,176 @@ function waveClass()   -- handles waves
         self.waveTime = 0
       end
     else  -- Start spawning zombies
-    
+
       if self.zombieSpawnTime <= 0 then   -- Spawns a zombie if zombie spawn time has ran out
-        
+
         self.zombieSpawnTime = self.waveInfo[self.waveNum].spawnTime    -- Set spawn time to the waves spawn time
         self.waveInfo[self.waveNum].count = self.waveInfo[self.waveNum].count - 1
-        
+
         table.insert(zombieList, zombieClass())
-        
+
       else
-        
+
         self.zombieSpawnTime = self.zombieSpawnTime - dt
-        
+
       end
     end
   end
 
   self.render = function()
-    
+
     if self.waveTime < 5 then
-      
+
       local textTransparency = 255
       if self.waveTime < self.textFadeIn then
         textTransparency = math.floor(255*(self.waveTime/self.textFadeIn))
       elseif self.waveTime > 5 - self.textFadeOut then
         textTransparency = math.floor(255*(1 - (self.waveTime-(5-self.textFadeOut))/self.textFadeOut))
       end
-        
-      
+
+
       love.graphics.setNewFont(200)
       love.graphics.setColor(255, 255, 255, textTransparency)
       love.graphics.printf("Wave " .. self.waveNum, 0, 200, 1600, "center")
       love.graphics.setColor(255, 255, 255)
-      
+
     end
-    
+
   end
-  
+
 	return self
 end
 
 
 function mainClass()
   local self = {}
-  
+
   self.state = "main"
-  
+
   self.update = function()
-  
+
     if love.mouse.isDown(1) then
-      
+
       main.state = "game"
-      
+
     end
-    
+
   end
-  
+  self.words = {
+      {count = 1, Saying = "~~~Main Menu~~~~"},
+      {count = 2, Saying = "Welcome To our Game"},
+      {count = 3, Saying = "Play"},
+      {count = 4, Saying = "Tutorial"},
+      {count = 5, Saying = "Quit Game"}
+  }
+
   self.render = function()
-    
-    love.graphics.setNewFont(100)
-    love.graphics.print("Main Menu", 200, 200)
-    
+    love.graphics.setBackgroundColor(76, 76, 76)
+    for words,wordcount in pairs(self.words) do
+      local wordPos = {x=20, y= 100 + ((wordcount.count)-1)*100,}
+      love.graphics.setFont(mainFont)
+      love.graphics.printf(wordcount.Saying, wordPos.x, wordPos.y, 1580, "center")
+      if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 1580) then
+        if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+          if wordcount.count == 3 or wordcount.count == 4 or wordcount.count == 5 then
+            love.graphics.setColor(0, 0, 0, 100)
+            love.graphics.rectangle("fill", wordPos.x, wordPos.y, 1600, 100)
+            love.graphics.setColor(255, 255, 255)
+          end
+        end
+      end
+    end
   end
-  
+  self.mousePressed = function()
+    for words,wordcount in pairs(self.words) do
+      local wordPos = {x=20, y= 100 + ((wordcount.count)-1)*100,}
+      if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 1580) then
+        if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+          if love.mouse.isDown(1) and wordcount.count == 3 then
+            main.state = 'game'
+          elseif love.mouse.isDown(1) and wordcount.count == 4 then
+            main.state = "tutorial"
+          elseif love.mouse.isDown(1) and wordcount.count == 5 then
+            love.event.quit()
+          end
+        end
+      end
+    end
+  end
+
+  return self
+end
+
+function escGameClass()
+  local self = {}
+
+  self.escRender = false
+  self.words = {
+      {count = 1, Saying = "Back to Game"},
+      {count = 2, Saying = "To Main Menu"},
+      {count = 3, Saying = "Quit Game"}
+  }
+  self.render = function()
+    love.graphics.setColor(74,74,74)
+    love.graphics.rectangle('fill', 700, 150, 250, 300) -- fix to fit screen perfectly
+    love.graphics.setColor(171, 171, 171)
+    love.graphics.rectangle('line', 700, 150, 250, 300)
+    love.graphics.setColor(255, 255, 255)
+    for words,wordcount in pairs(self.words) do
+      local wordPos = {x=700, y= 155 + ((wordcount.count)-1)*100,}
+      love.graphics.setFont(font)
+      love.graphics.printf(wordcount.Saying, wordPos.x, wordPos.y, 250, "center")
+      if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 250) then
+        if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+          love.graphics.setColor(0, 0, 0, 100)
+          love.graphics.rectangle("fill", wordPos.x, wordPos.y, 250, 100)
+          love.graphics.setColor(255, 255, 255)
+        end
+      end
+    end
+  end
+  self.mousePressed = function()
+    for words,wordcount in pairs(self.words) do
+      local wordPos = {x=700, y= 155 + ((wordcount.count)-1)*100,}
+      if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 250) then
+        if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+          if self.escRender == true and love.mouse.isDown(1) and wordcount.count == 1 then
+            self.escRender = false
+          elseif self.escRender == true and love.mouse.isDown(1) and wordcount.count == 2 then
+            main.state = "main"
+          elseif self.escRender == true and love.mouse.isDown(1) and wordcount.count == 3 then
+            love.event.quit()
+          end
+        end
+      end
+    end
+  end
+  return self
+end
+
+function tutorialClass()
+  local self = {}
+  self.render = function()
+    tutorialImage.render(0,0, false, 0)
+    local wordPos = {x=0, y= 155,}
+    if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 250) then
+      if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+        love.graphics.setColor(0, 0, 0, 100)
+        love.graphics.rectangle("fill", wordPos.x, wordPos.y, 250, 100)
+        love.graphics.setColor(255, 255, 255)
+      end
+    end
+  end
+  self.mousePressed = function()
+    local wordPos = {x=0, y= 155,}
+    if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 250) then
+      if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
+        if love.mouse.isDown(1) then
+          main.state = "main"
+        end
+      end
+    end
+  end
   return self
 end
 
@@ -323,11 +438,14 @@ end
 function love.draw()
 
   if main.state == "main" then
-    
+
     main.render()
-    
+
+  elseif main.state == "tutorial" then
+    tut.render()
+
   elseif main.state == "game" then
-  
+
 
       --- Render background stuff ---
     backgroundImage.render(0, 0, false, 0)	-- Render the background
@@ -338,25 +456,29 @@ function love.draw()
     for i,zombie in ipairs(zombieList) do
       zombie.render()
     end
-    
+
     groundLowerImage.render(0, 700, false, 0)	-- Render the second ground image
-    
+
 
       --- Player Rendering ---
     player.render()
-    
-    
+
+
+
       --- Coin rendering ---
     for i,coin in ipairs(coins) do
       coin.image.render(coin.pos.x, coin.pos.y, false, 0)
     end
 
-    
+
       --- Shop Rendering ---
     if shop.shopRender == (true ~= true ~= true) then
       shop.render()
     end
-    
+
+    if esc.escRender == true then
+      esc.render()
+    end
       --- Inv Rendering ---
     inv.render()
 
@@ -377,20 +499,27 @@ end
 function love.update(dt)
 
   if main.state == "main" then
-    
+
     main.update()
-    
+
   end
-    
+
+  if main.state == "tutorial" then
+    tut.mousePressed()
+  end
+
+
   if main.state == "game" then
-    
+
     waveHandler.update(dt)
 
     -- Update all zombies --
     for i,zombie in ipairs(zombieList) do
       zombie.update(dt)
     end
-    
+
+    esc.mousePressed()
+
     -- Loop through zombieList backwards, removing any zombies that should be dead
     for i=#zombieList,1,-1 do
         if zombieList[i].deathTime >= zombieList[i].deathTurningTime + zombieList[i].deathSinkingTime then
@@ -400,16 +529,16 @@ function love.update(dt)
 
 
     player.update(dt)
-  
+
   end
 
 end
 
-function love.keypressed(key)	
+function love.keypressed(key)
 	if key == 'k' then	-- Add coin to random x value when "k" is pressed
 		table.insert(coins, coinClass(math.floor(math.random()*1600)))
 	end
-  
+
   if key == 't' then
 		shop.shopRender = not shop.shopRender
     inv.inventoryRender = false
@@ -419,6 +548,10 @@ function love.keypressed(key)
 		inv.inventoryRender = not inv.inventoryRender
     shop.shopRender = false
 	end
+
+  if key == 'escape' then
+    esc.escRender = not esc.escRender
+  end
 end
 
 
