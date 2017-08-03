@@ -10,12 +10,15 @@ function zombieClass()	-- Side is left/right
 
 
   -- Image Rendering Variables --
-	self.image_zombie_arm_back = imageClass('zombie_arm_back.png', self.size.w, self.size.h, 0.53, 0.53)		-- Default image is zombie looking to the right
-	self.image_zombie_torso = imageClass('zombie_torso.png', self.size.w, self.size.h, 0.5, 0.73)		-- Default image is zombie looking to the right
-	self.image_zombie_arm_front = imageClass('zombie_arm_front.png', self.size.w, self.size.h, 0.35, 0.56)		-- Default image is zombie looking to the right
+  self.image_zombie_torso = imageClass('zombie/zombie_torso.png', self.size.w, self.size.h, 0, 0)		-- Default image is zombie looking to the right
+	self.image_zombie_arm_back = imageClass('zombie/zombie_arm_back.png', self.size.w, self.size.h, 0.53, 0.53)		-- Default image is zombie looking to the right
+	self.image_zombie_arm_front = imageClass('zombie/zombie_arm_front.png', self.size.w, self.size.h, 0.35, 0.56)		-- Default image is zombie looking to the right
+  self.image_zombie_leg_back = imageClass('zombie/zombie_leg_back.png', self.size.w, self.size.h, 0, 0)		-- Default image is zombie looking to the right
+  self.image_zombie_leg_front = imageClass('zombie/zombie_leg_front.png', self.size.w, self.size.h, 0, 0)		-- Default image is zombie looking to the right
 
 
-	self.speed = 50 + math.random()*25	-- Speed in pixels per second
+
+	self.speed = 30 + math.random()*25	-- Speed in pixels per second
   self.health = {cur=100, max=100}  -- Current/Max HP
   
 	self.facingDirection = nil
@@ -29,9 +32,37 @@ function zombieClass()	-- Side is left/right
   self.knockbackFriction = 200    -- knockbackVelocity lost per second
   
   -- Zombie Attack Variables --
-  self.attackTime = 0
+  self.attackTime = 2   -- Time between attack
+  self.attackCooldown = 0   -- Current attack cooldown value, zombie can attack when this is less than or equal to zero
+  self.attackDmg = 10
+  self.attackSounds = {
+    love.audio.newSource("resources/sound/zombie/hit1.wav", "static"),
+    love.audio.newSource("resources/sound/zombie/hit2.wav", "static"),
+    love.audio.newSource("resources/sound/zombie/hit3.wav", "static")
+  }
+  
+  self.groanTimer = 0 + math.random() * 10
+  self.groanSounds = {
+    love.audio.newSource("resources/sound/zombie/groan1.ogg", "static"),
+    love.audio.newSource("resources/sound/zombie/groan2.ogg", "static"),
+    love.audio.newSource("resources/sound/zombie/groan3.ogg", "static"),
+    love.audio.newSource("resources/sound/zombie/groan4.ogg", "static")
+  }
+  
+  self.dieSounds = {
+    love.audio.newSource("resources/sound/zombie/die1.ogg", "static"),
+    love.audio.newSource("resources/sound/zombie/die2.ogg", "static"),
+    love.audio.newSource("resources/sound/zombie/die3.ogg", "static")
+  }
+  
+  self.hitSounds = {
+    love.audio.newSource("resources/sound/hit_zombie1.ogg", "static"),
+    love.audio.newSource("resources/sound/hit_zombie2.ogg", "static"),
+    love.audio.newSource("resources/sound/hit_zombie3.ogg", "static")
+  }
+  
  
-  self.aliveTime = 0    -- The number of seconds the since the zombie began updating
+  self.aliveTime = 0    -- The number of seconds the since the zombie began updating (used for the walking sin waves)
 
   self.deathTime = 0   -- The number of seconds the zombie has been dead (health <= 0)
   self.deathTurningTime = 2
@@ -90,16 +121,32 @@ function zombieClass()	-- Side is left/right
 		if (self.facingDirection == "right") then	-- Zombie is facing the right
       
       -- Draw main body parts
+            
+      -- Walking animation
+      local backLegOffset = {x=-math.cos(self.aliveTime*2)*3, y=-math.sin(self.aliveTime*2)*2}
+      self.image_zombie_leg_back.render(backLegOffset.x, backLegOffset.y, false, 0)
+      local frontLegOffset = {x=math.cos(self.aliveTime*2)*3, y=math.sin(self.aliveTime*2)*2}
+      self.image_zombie_leg_front.render(frontLegOffset.x, frontLegOffset.y, false, 0)
+      
       self.image_zombie_arm_back.render(self.size.w*0.53, self.size.h*0.53, false, armSwingBack)	-- Draw back arm
-			self.image_zombie_torso.render(self.size.w*0.5, self.size.h*0.73, false, 0)	-- Draw zombie looking right
+			self.image_zombie_torso.render(0, 0, false, 0)	-- Draw zombie looking right
 			self.image_zombie_arm_front.render(self.size.w*0.35, self.size.h*0.56, false, armSwingFront)	-- Draw front arm
 
 
     else -- Zombie is facing the left
     
       -- Draw main body parts
+      
+      -- Walking animation
+      local backLegOffset = {x=-math.sin(self.aliveTime*2)*3, y=-math.cos(self.aliveTime*2)*2}
+      self.image_zombie_leg_back.render(backLegOffset.x, backLegOffset.y, true, 0)
+      local frontLegOffset = {x=math.sin(self.aliveTime*2)*3, y=math.cos(self.aliveTime*2)*2}
+      self.image_zombie_leg_front.render(frontLegOffset.x, frontLegOffset.y, true, 0)
+    
+    
+  
       self.image_zombie_arm_back.render(-self.size.w*0.53, self.size.h*0.53, true, armSwingBack)	-- Draw back arm
-			self.image_zombie_torso.render(-self.size.w*0.5, self.size.h*0.73, true, 0)	-- Draw zombie looking right
+			self.image_zombie_torso.render(0, 0, true, 0)	-- Draw zombie looking right
 			self.image_zombie_arm_front.render(-self.size.w*0.35, self.size.h*0.56, true, armSwingFront)	-- Draw front arm
       
       
@@ -113,9 +160,9 @@ function zombieClass()	-- Side is left/right
     
     
       -- Render small circle at rotation point
-    love.graphics.setColor(255, 0, 0)	
-    love.graphics.circle("fill", self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.73, 5)
-    love.graphics.setColor(255, 255, 255)
+  --  love.graphics.setColor(255, 0, 0)	
+  --  love.graphics.circle("fill", self.pos.x + self.size.w*0.5, self.pos.y + self.size.h*0.73, 5)
+  --  love.graphics.setColor(255, 255, 255)
     
 
     if false then
@@ -202,9 +249,37 @@ function zombieClass()	-- Side is left/right
 
 
         --- Zombie attacking player ---
-      if touchingPlayer then
-        
+      if self.attackCooldown > 0 then
+        self.attackCooldown = self.attackCooldown - dt
+      else
+        if touchingPlayer then
+          self.attackCooldown = self.attackTime
+          
+          -- Deal damage to player
+          player.health.cur = player.health.cur - self.attackDmg
+          if player.health.cur < 0 then
+            player.health.cur = 0
+          end
+          
+          -- Play random attacking sound
+          local randomAttackNoise = math.random(#self.attackSounds)   -- random noise index
+          self.attackSounds[randomAttackNoise]:setVolume(0.5)
+          self.attackSounds[randomAttackNoise]:stop()
+          self.attackSounds[randomAttackNoise]:play()
+          
+        end
       end
+      
+      -- Playe zombie groaning noises
+      self.groanTimer = self.groanTimer - dt
+      if self.groanTimer <= 0 then
+          self.groanTimer = 5 + math.random() * 10
+          local randomGroanNoise = math.random(#self.groanSounds)   -- random noise index
+          self.groanSounds[randomGroanNoise]:setVolume(0.2)
+          self.groanSounds[randomGroanNoise]:stop()
+          self.groanSounds[randomGroanNoise]:play()
+      end
+      
     end
 	end
   
