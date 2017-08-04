@@ -53,6 +53,7 @@ function droppedItemClass(zombie)     -- Set chance any item will drop (maybe 1/
     
     local crateTransparency = 255   -- Apply transparency to crate as it reaches its 15 second limit
     if self.dropTime >= 10 then
+      -- Complicated formula that basicially makes crateTransparency alternate from 0-255
       crateTransparency = math.floor(255 * (math.sin((self.dropTime-10)*(self.dropTime-10)/2)+1)/2)
       if self.dropTime >= 20 and main.state ~= "tutorial" then
         self.deleteMe = true

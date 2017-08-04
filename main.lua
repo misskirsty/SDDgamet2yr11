@@ -12,29 +12,25 @@ function love.load()
   require("dead")
   require("tutorial")
   
+  love.window.setMode(1600, 900, {resizable=false,vsync=false})
+
+	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair48.png"), 24, 24)
+	love.mouse.setCursor(crosshair)
 
   cratePickupSound = love.audio.newSource("resources/sound/crate_pickup.ogg", "static")
   buttonClickSound = love.audio.newSource("resources/sound/button_click.ogg", "static")
+  
+  statsFont = love.graphics.setNewFont('resources/shop_font2.ttf', 20)     -- For stats in top left
   
   
   -- Lock Image for lower gun bar
   lockImageInv = imageClass("lock.png", 120, 120, 0, 0)
   lockImageShop = imageClass("lock.png", 160, 160, 0, 0)
-  
-  
+
   ammoDropImage = imageClass("ammo.png", 70, 70, 0, 0)
   crateDropImage = imageClass("crate.png", 120, 120, 0, 0)
-
-	love.window.setMode(1600, 900, {resizable=true,vsync=false})
-
-	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair48.png"), 24, 24)
-	love.mouse.setCursor(crosshair)
 	
 	backgroundImage = imageClass("background.png", 1600, 900, 0, 0)
-
-
-	droppedItems = {}	
-  zombieList = {}
 
   
   --- Menu stuff
@@ -49,10 +45,11 @@ function love.load()
   waveHandler = waveClass()
 
   
+	droppedItems = {}	
+  zombieList = {}
   mouseDown = false
   mouseClicked = false
   
-  statsFont = love.graphics.setNewFont('resources/shop_font2.ttf', 20)     -- For stats in top left
   
   ITEM_DROP_CHANCE = 1/5
 
@@ -95,7 +92,7 @@ function mainClass()
       text = "Continue", 
       onclick = function()
 
-        if player.health.cur > 0 then  -- Continue game is player is not dead
+        if player.health.cur > 0 then  -- Continue game if player is not dead
           main.state = "game"
           
           self.playingMusic = false
@@ -360,11 +357,11 @@ end
 function love.keypressed(key)	
 
 	if key == 't' then
-		waveHandler.endWave()
+		--waveHandler.endWave()
 	end
   
   if key == 'k' then
-		player.health.cur = 0
+		--player.health.cur = 0
 	end
   
 end
