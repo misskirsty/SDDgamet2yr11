@@ -1,1 +1,151 @@
-#Main Pseudocode
+#main.lua Pseudocode
+
+BEGIN love.load()
+  IMPORT all other files
+  
+  SET window size = (1600, 900)
+  SET mouse cursor = crosshair image
+  
+  SET cratePickupSound = new AudioSource()
+  SET buttonClickSound = new AudioSource()
+  
+  SET lockImageInv = new ImageClass()
+  SET lockImageShop = new ImageClass()
+  SET ammoDropImage = new ImageClass()
+  SET crateDropImage = new ImageClass()
+  SET backgroundImage = new ImageClass()
+  
+  SET main = new mainClass()
+  SET esc = new escapeMenuClass()
+  SET tut = new tutorialClass()
+  SET dead = new deadClass()
+  SET player = new playerClass()
+	SET inv = new inventoryClass()
+  SET shop = new shopClass()
+  SET waveHandler = new waveClass()
+
+  SET droppedItems = {}	
+  SET zombieList = {}
+  
+  SET mouseDown = false
+  SET mouseClicked = false
+  
+  SET ITEM_DROP_CHANCE = 1/5
+
+END love.load
+
+
+BEGIN imageClass(src, width, height, originX, originY)
+  SET image = new image(src="resources/" + src)
+  SET w, h = width, height
+  SET sx, sy = self.w/self.image:getWidth(), self.h/self.image:getHeight()
+  SET ox, oy = originX*self.image:getWidth(), originY*self.image:getHeight()
+  BEGIN render(x, y, flipped, rotation)
+    IF flipped THEN
+      love.graphics.draw(image, x, y, rotation, sx, sy, ox, oy)
+    ELSE
+      love.graphics.draw(image, x+w, y, rotation, -sx, sy, ox, oy)
+    ENDIF
+  END render
+END imageClass
+
+
+BEGIN mainClass()
+  SET state = "main"
+  SET font1 = new Font()
+  SET font2 = new Font()
+  SET menu_music = new AudioSource()
+  SET playingMusic = false
+  
+  SET buttons = {
+    {
+      SET text = "Continue"
+      BEGIN onclick()
+        IF player health > 0 THEN
+          SET main.state = "game"
+          SET playingMusic = false
+       ENDIF
+      END onclick
+    },
+    {
+      SET text = "New Game"
+      BEGIN onclick()
+        RUN waveHandler.restartGame()
+        SET self.playingMusic = false
+      END onclick
+    },
+    {
+      SET text = "Tutorial"
+      BEGIN onclick()
+        RUN waveHandler.restartGame()
+        SET main.state = "tutorial"
+        SET tut.stage = 1
+      END onclick
+    },
+    {
+      SET text = "Quit Game"
+      BEGIN onclick()
+        QUIT GAME
+      END onclick
+    }
+  }
+  
+  BEGIN render()
+    DISPLAY game title at top of screen
+    FOR button IN buttons DO
+      SET buttonRect = {x=500, y= 220 + (button number-1)*160, w=600, h=155}
+      IF button text == "Continue" AND player health < 0 THEN
+        DISPLAY button text in grey
+      ELSE
+        DISPLAY button text in white
+      ENDIF
+      IF mouseInRect(buttonRect) THEN
+        DISPLAY dark hover rectangle on top of button
+      ENDIF
+    END
+  END render
+  
+  BEGIN update()
+    IF NOT playingMusic then
+      SET playingMusic = true
+      PLAY menu_music
+    ENDIF
+    
+    IF mouseClicked THEN
+      FOR button IN buttons DO
+        SET buttonRect = {x=500, y= 220 + (button number-1)*160, w=600, h=155}
+        IF mouseInRect(buttonRect) THEN
+          RUN button.onclick()
+          SET mouseClicked = false
+          IF NOT (button text == "Continue") OR (player health > 0) THEN
+            PLAY buttonClickSound
+          END
+          BREAK
+        ENDIF
+      END
+    ENDIF
+  END update
+END mainClass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
