@@ -57,26 +57,26 @@ BEGIN tutorialClass()
   }
   
   BEGIN render(dt)
-    Display background image
+    DISPLAY background image
     
     FOR EACH zombie IN zombieList DO
-      Display zombie
+      DISPLAY zombie
     END 
     
-    Display player image
+    DISPLAY player image
     
     FOR EACH item IN droppedItems DO
-      Display item
+      DISPLAY item
     END 
     
-    Display inventory
+    DISPLAY inventory
     
-    Display main menu button
+    DISPLAY main menu button
     IF mouseInRect(main menu button) THEN
-      Display transparent colour over button
+      DISPLAY transparent colour over button
     ENDIF
     
-    Display tutorial box
+    DISPLAY tutorial box
     
   BEGIN update()
     IF mouse clicked AND mouseInRect(main menu button) THEN
