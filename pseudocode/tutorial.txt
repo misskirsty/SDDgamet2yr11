@@ -1,9 +1,9 @@
 #Tutorial Pseudocode
 
 BEGIN tutorialClass()
-  SET font1 = new font
-  SET font2 = new font
-  SET font3 = new font
+  SET font1 = new Font()
+  SET font2 = new Font()
+  SET font3 = new Font()
   
   SET stage = 1
   SET stages = {
