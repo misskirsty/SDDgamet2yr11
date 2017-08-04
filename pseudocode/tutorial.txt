@@ -94,7 +94,7 @@ BEGIN tutorialClass()
       END
 
       FOR EACH zombie IN zombieList DO
-        IF zombie.deathTime >= zombie.deathTurningTime THEN
+        IF zombie.deathTime >= length of the dying animation THEN
           REMOVE zombie FROM zombieList
         ENDIF
       END
