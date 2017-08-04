@@ -1,4 +1,5 @@
 #Tutorial Pseudocode
+
 BEGIN tutorialClass()
   Font1 = new font
   Font2 = new font
@@ -9,9 +10,9 @@ BEGIN tutorialClass()
     {
       title = "Moving Around"
       text = "Used the 'A' and 'D' keys to move left and right across the screen."
-      BEGIN Test()
+      BEGIN test()
         RETURN Walk Time > 1
-      END Test
+      END test
     },
     {
       title = "Shooting"
