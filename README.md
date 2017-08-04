@@ -1,4 +1,2 @@
-# SDDgamet2yr11
- 
- # Zombie game
+# Lua Zombie game
  
