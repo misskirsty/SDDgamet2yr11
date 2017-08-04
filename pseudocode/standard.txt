@@ -1,0 +1,46 @@
+
+IF Condition THEN
+  Display "Yes"
+ELSE
+  Display "No"
+ENDIF
+
+
+REPEAT
+  Process
+UNTIL Condition
+
+
+FOR Count = 2 TO 100 STEP 2
+ Display Count
+NEXT Count
+
+FOR EACH zombie IN zombieList
+ Display zombie
+END zombieList
+
+
+WHILE Count <= 100
+  Display Count
+  Count = Count + 2
+ENDWHILE
+
+
+BEGIN Process()
+ Process1()
+ Process2()
+END Process
+
+BEGIN Process1()
+  Do something
+END Process1
+
+BEGIN Process2()
+  Do something
+END Process2
+
+
+
+
+
+
