@@ -20,6 +20,10 @@ function playerClass()
   self.font1 = love.graphics.setNewFont('resources/shop_font2.ttf', 50)     -- For ammo info in bottom right
   
   self.gameOverSound = love.audio.newSource("resources/sound/game_over.ogg", "static")
+  
+  self.footStep = true   -- Alternates between true and false depending on the foot step noise
+  self.footStep1Sound = love.audio.newSource("resources/sound/foot_step1.ogg", "static")
+  self.footStep2Sound = love.audio.newSource("resources/sound/foot_step2.ogg", "static")
 
   self.shotCooldown = 0
   self.flashCooldown = 0
@@ -35,6 +39,21 @@ function playerClass()
   
 	self.render = function()
     
+    if self.footStep and math.sin(self.walkTime*5) > 0 then
+      self.footStep = false
+      self.footStep1Sound:setVolume(1)
+      self.footStep1Sound:stop()
+      self.footStep1Sound:play()
+      
+    elseif not self.footStep and math.sin(self.walkTime*5) < 0 then
+      self.footStep = true
+      self.footStep2Sound:setVolume(1)
+      self.footStep2Sound:stop()
+      self.footStep2Sound:play()
+      
+    end
+    
+    love.graphics.setColor(255, 255, 255)
     local flashTransparency = math.floor(255 * (self.flashCooldown/0.25) )
     
 		armBob = math.sin(self.walkTime * 8) * 2	-- How much the arm is currently bobbing from its original position (ranges from -3 to 3)
@@ -150,16 +169,6 @@ function playerClass()
       
       
     else
-    
-      -- Check player collision with every coin --
-      for i,coin in ipairs(coins) do
-        if (coin.pos.x + coin.w > player.pos.x + player.collisionBody.x) and (coin.pos.x < player.pos.x + player.collisionBody.x + player.collisionBody.w) then
-          table.remove(coins,i)
-          inv.coins = inv.coins + 1
-          print("Picked up coin")
-        end
-      end
-
 
       local moveSpeed = self.speed 
       moveSpeed = moveSpeed * gunList[inv.selectedGun].player_speed_multiplier
@@ -171,13 +180,17 @@ function playerClass()
 
       -- Test for input and move player
       if love.keyboard.isDown('d') then
-        player.pos.x = player.pos.x + moveSpeed*dt
-
-        player.walkTime = player.walkTime + dt 	-- Bob arms up and down
+        self.pos.x = self.pos.x + moveSpeed*dt
+        if self.pos.x + self.collisionBody.x + self.collisionBody.w > 1600 then
+          self.pos.x = 1600 - self.collisionBody.x - self.collisionBody.w
+        end
+        self.walkTime = self.walkTime + dt 	-- Bob arms up and down
       elseif love.keyboard.isDown('a') then
-        player.pos.x = player.pos.x - moveSpeed*dt
-
-        player.walkTime = player.walkTime + dt 	-- Bob arms up and down
+        self.pos.x = self.pos.x - moveSpeed*dt
+        if self.pos.x + self.collisionBody.x < 0 then
+          self.pos.x = -self.collisionBody.x
+        end
+        self.walkTime = self.walkTime + dt 	-- Bob arms up and down
       end
       
       
@@ -307,13 +320,16 @@ function playerClass()
       if (gunList[inv.selectedGun].penetration < i) then    -- Only allow certain number of zombies to be hit depending on guns penetration
         break
       end
+      local zombiePart = hitZombies[i].hitInfo.part   -- Part that zombie was hit in
+      local zombieIndex = hitZombies[i].index     -- Index of zombie that was hit
       
       local canShoot = true   -- Just a couple of limitations on shooting the zombie
       canShoot = (inv.selectedGun ~= "shotgun" or zombieStats.dist < 650)   -- Either we are NOT using shotgun or zombie is closer than 650 pixels
+      if (zombieList[zombieIndex].pos.x < -zombieList[zombieIndex].size.w/2) or (zombieList[zombieIndex].pos.x > 1600 - zombieList[zombieIndex].size.w/2) then   -- Too far to left/right
+        canShoot = false
+      end
       
       if canShoot then
-        local zombiePart = hitZombies[i].hitInfo.part   -- Part that zombie was hit in
-        local zombieIndex = hitZombies[i].index     -- Index of zombie that was hit
         print("Hitting zombie in " .. zombiePart)
         
         -- Zombies can only be given knockback if they were still alive at the time of being shot
@@ -350,9 +366,11 @@ function playerClass()
           zombieList[zombieIndex].dieSounds[randomDeathNoise]:play()
 
           -- Add new item on to dropped items table
-          if (math.random() < 0.3) then
-            table.insert(droppedItems, droppedItemClass(zombieList[zombieIndex]))
+          if (math.random() < ITEM_DROP_CHANCE or main.state == "tutorial") then
+            table.insert(droppedItems, droppedItemClass(zombieList[zombieIndex], false))
           end
+          
+          
         end
       end
     end

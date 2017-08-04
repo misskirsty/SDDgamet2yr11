@@ -18,8 +18,9 @@ function zombieClass()	-- Side is left/right
 
 
 
-	self.speed = 30 + math.random()*25	-- Speed in pixels per second
-  self.health = {cur=100, max=100}  -- Current/Max HP
+	self.speed = 30 + math.random()*25 + waveHandler.waveNum*2	-- Speed in pixels per second
+  self.health = {cur=0, max=50 + waveHandler.waveNum*10}  -- Current/Max HP
+  self.health.cur = self.health.max
   
 	self.facingDirection = nil
   
@@ -34,7 +35,7 @@ function zombieClass()	-- Side is left/right
   -- Zombie Attack Variables --
   self.attackTime = 2   -- Time between attack
   self.attackCooldown = 0   -- Current attack cooldown value, zombie can attack when this is less than or equal to zero
-  self.attackDmg = 10
+  self.attackDmg = 10 + waveHandler.waveNum
   self.attackSounds = {
     love.audio.newSource("resources/sound/zombie/hit1.wav", "static"),
     love.audio.newSource("resources/sound/zombie/hit2.wav", "static"),
@@ -43,7 +44,7 @@ function zombieClass()	-- Side is left/right
   
   self.groanTimer = 0 + math.random() * 10
   self.groanSounds = {
-    love.audio.newSource("resources/sound/zombie/groan1.ogg", "static"),
+  --love.audio.newSource("resources/sound/zombie/groan1.ogg", "static"),
     love.audio.newSource("resources/sound/zombie/groan2.ogg", "static"),
     love.audio.newSource("resources/sound/zombie/groan3.ogg", "static"),
     love.audio.newSource("resources/sound/zombie/groan4.ogg", "static")
@@ -118,6 +119,8 @@ function zombieClass()	-- Side is left/right
     love.graphics.clear()   -- Clear zombie canvas
     love.graphics.setBlendMode("alpha")
 
+    love.graphics.setColor(255, 255, 255)
+
 		if (self.facingDirection == "right") then	-- Zombie is facing the right
       
       -- Draw main body parts
@@ -177,19 +180,20 @@ function zombieClass()	-- Side is left/right
       love.graphics.setColor(255, 255, 255)
     end
     
-    -- Render health box above head
-    love.graphics.setColor(50, 0, 0)
-		love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, 150, 20)   -- Background dark red fill
-		love.graphics.setColor(255, 255, 255)
-    barWidth = math.floor(150 * (self.health.cur/self.health.max))
-    love.graphics.setColor(255, 0, 0)
-		love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, barWidth, 20)   -- Light red actual health fill
-		love.graphics.setColor(255, 255, 255)
-    love.graphics.setLineWidth(3)
-    love.graphics.setColor(0, 0, 0)
-		love.graphics.rectangle( "line", self.pos.x+53, self.pos.y-20, 150, 20)   -- Black border around health bar
-		love.graphics.setColor(255, 255, 255)
-    
+    if false then
+      -- Render health box above head
+      love.graphics.setColor(50, 0, 0)
+      love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, 150, 20)   -- Background dark red fill
+      love.graphics.setColor(255, 255, 255)
+      barWidth = math.floor(150 * (self.health.cur/self.health.max))
+      love.graphics.setColor(255, 0, 0)
+      love.graphics.rectangle( "fill", self.pos.x+53, self.pos.y-20, barWidth, 20)   -- Light red actual health fill
+      love.graphics.setColor(255, 255, 255)
+      love.graphics.setLineWidth(3)
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.rectangle( "line", self.pos.x+53, self.pos.y-20, 150, 20)   -- Black border around health bar
+      love.graphics.setColor(255, 255, 255)
+    end
     
     
 	end

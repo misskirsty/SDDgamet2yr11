@@ -10,6 +10,7 @@ function love.load()
   require("droppedItem")
   require("gunList")
   require("dead")
+  require("tutorial")
   
 
   cratePickupSound = love.audio.newSource("resources/sound/crate_pickup.ogg", "static")
@@ -24,7 +25,7 @@ function love.load()
   ammoDropImage = imageClass("ammo.png", 70, 70, 0, 0)
   crateDropImage = imageClass("crate.png", 120, 120, 0, 0)
 
-	love.window.setMode(1600, 900, {resizable=false,vsync=false})
+	love.window.setMode(1600, 900, {resizable=true,vsync=false})
 
 	crosshair = love.mouse.newCursor(love.image.newImageData("resources/crosshair48.png"), 24, 24)
 	love.mouse.setCursor(crosshair)
@@ -46,15 +47,14 @@ function love.load()
 	inv = inventoryClass()
   shop = shopClass()
   waveHandler = waveClass()
-  
-  
-  tutorialImage = imageClass("tutorial.png", 1600, 900, 0, 0)
+
   
   mouseDown = false
   mouseClicked = false
   
-  
   statsFont = love.graphics.setNewFont('resources/shop_font2.ttf', 20)     -- For stats in top left
+  
+  ITEM_DROP_CHANCE = 1/5
 
 end
 
@@ -99,7 +99,7 @@ function mainClass()
           main.state = "game"
           
           self.playingMusic = false
-          self.menu_music:setVolume(0.1)
+          self.menu_music:setVolume(0.15)
           --self.menu_music:stop()
         end
         
@@ -110,14 +110,16 @@ function mainClass()
       onclick = function()
         waveHandler.restartGame()
         self.playingMusic = false
-        self.menu_music:setVolume(0.1)
+        self.menu_music:setVolume(0.15)
         --self.menu_music:stop()
       end
     },
     {
       text = "Tutorial",
       onclick = function()
+        waveHandler.restartGame()
         main.state = "tutorial"
+        tut.stage = 1
       end
     },
     {
@@ -189,35 +191,6 @@ function mainClass()
   return self
 end
 
-function tutorialClass()
-  local self = {}
-  
-  self.render = function()
-    tutorialImage.render(0,0, false, 0)
-    local wordPos = {x=10, y= 20}
-    if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 500) then
-      if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
-        love.graphics.setColor(0, 0, 0, 100)
-        love.graphics.rectangle("fill", wordPos.x, wordPos.y, 500, 100)
-        love.graphics.setColor(255, 255, 255)
-      end
-    end
-  end
-  
-  self.update = function()
-    if love.mouse.isDown(1) then
-      local wordPos = {x=10, y= 20}
-      if (wordPos.x <= love.mouse.getX() and love.mouse.getX() <= wordPos.x + 500) then
-        if (wordPos.y <= love.mouse.getY() and love.mouse.getY() <= wordPos.y + 100) then
-          main.state = "main"
-        end
-      end
-    end
-  end
-  
-  return self
-end
-
 
 function love.draw()
 
@@ -227,7 +200,7 @@ function love.draw()
     
   elseif main.state == "tutorial" then
     
-    tut.render()
+    tut.render(dt)
     
   else  -- Either in game or dead
   
@@ -271,8 +244,8 @@ function love.draw()
     -- Display Stats --
     love.graphics.setFont(statsFont)
     love.graphics.print("FPS: " .. tostring(love.timer.getFPS()), 10, 10)
-    love.graphics.print("Zombie Count: " .. tostring(#zombieList), 10, 30)
-    love.graphics.print(player.shotCooldown, 10, 50)    -- Temporarily render shotCooldown
+    --love.graphics.print("Zombie Count: " .. tostring(#zombieList), 10, 30)
+    --love.graphics.print(player.shotCooldown, 10, 50)    -- Temporarily render shotCooldown
 
 
     -- Render stuff if player is dead
@@ -307,9 +280,15 @@ function love.update(dt)
   
 
   if main.state == "main" then
+    
     main.update()
-  elseif main.state == "tutorial" then
-    tut.update()
+    
+  end
+    
+  if main.state == "tutorial" then
+    
+    tut.update(dt)
+    
   end
     
   if main.state == "game" then    -- Allows game to update the moment main.state is set to game

@@ -28,9 +28,6 @@ function waveClass()   -- handles waves
     
     player.health.cur = player.health.max
     player.pos.x = 800-player.size.w/2
-    player.shotCooldown = 0
-    player.flashCooldown = 0
-    player.reloadCooldown = 0
     
     inv.selectedGun = "pistol"
     
@@ -60,6 +57,10 @@ function waveClass()   -- handles waves
   self.startNextWave = function()
     
     player.health.cur = player.health.max
+    player.shotCooldown = 0
+    player.flashCooldown = 0
+    player.reloadCooldown = 0
+    player.walkTime = 0
 
     -- Play wave starting sound
     self.waveStartSound:setVolume(0.2)
@@ -96,9 +97,9 @@ function waveClass()   -- handles waves
     for gunName,gun in pairs(gunList) do
       if gunName ~= "pistol" then   -- Reset gun stats for every gun except pistol
         gun.holding = false
-        gun.ammo.cur = gun.ammo.clip
-        gun.ammo.backup = gun.ammo.max
       end
+      gun.ammo.cur = gun.ammo.clip
+      gun.ammo.backup = gun.ammo.max
     end
     
     -- Delete all items, temporary maybe
