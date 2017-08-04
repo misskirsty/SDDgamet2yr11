@@ -174,7 +174,7 @@ BEGIN love.update()
 	IF main.state == "tutorial" THEN
 		RUN tut.update(dt)
 	END
-	IF mouse.state == "game" THEN
+	IF main.state == "game" THEN
 		RUN esc.update()
 		IF escape menu is NOT open THEN
 			IF shop is open THEN
