@@ -15,7 +15,7 @@ FOR Count = 2 TO 100 STEP 2
  Display Count
 NEXT Count
 
-FOR EACH zombie IN zombieList
+FOR EACH zombie IN zombieList DO
  Display zombie
 END
 
