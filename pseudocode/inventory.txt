@@ -7,10 +7,10 @@ BEGIN inventoryClass()
   
   BEGIN render()
     FOR gun IN gunList DO
-      SET imagePos = {x=400 ADD (gun.num-1)x 136, y = 750}
+      SET imagePos = {x=400+(gun.num-1)*136, y=750}
       DISPLAY filled rectangle origin at imagePos.x and imagePos.y
       
-      IF gunName = selectedGun THEN
+      IF gun name == selectedGun THEN
         SET graphics colour = (70, 70, 70)
         SET graphics line width = 8
       ELSE
@@ -19,9 +19,9 @@ BEGIN inventoryClass()
       ENDIF
       DISPLAY lined rectangle origin at imagePos.x and imagePos.y
       
-      IF gun.locked THEN
+      IF gun is locked THEN
         DISPLAY lockImageInv
-      ELSEIF NOT gunList[gunName].holding THEN
+      ELSEIF NOT gunList[gun name].holding THEN
         SET graphics colour = (0,0,0)
         DISPLAY gun.lowerImage
         SET graphics colour = (255,255,255)
@@ -35,10 +35,10 @@ BEGIN inventoryClass()
   
   BEGIN update()
     FOR gun IN gunList DO
-      IF keyboard is down (gun.num) AND NOT player.reloading THEN
-        IF gun.locked THEN
+      IF pressing gun.num key on keyboard AND player is NOT reloading THEN
+        IF gun is locked THEN
           print("Cannot switch to a gun that is locked.")
-        ELSEIF NOT gunList[gunName].holding THEN
+        ELSEIF NOT player owns gun THEN
           print("Cannot switch to a gun you dont own.")
         ELSE
           print("Switching to " + gunName)
