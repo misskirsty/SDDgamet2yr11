@@ -1,4 +1,4 @@
-Tutorial Pseudocod
+#Tutorial Pseudocode
 BEGIN tutorialClass()
   Font1 = new font
   Font2 = new font
