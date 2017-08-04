@@ -1,55 +1,55 @@
 #Tutorial Pseudocode
 
 BEGIN tutorialClass()
-  font1 = new font
-  font2 = new font
-  font3 = new font
+  SET font1 = new font
+  SET font2 = new font
+  SET font3 = new font
   
-  stage = 1
-  stages = {
+  SET stage = 1
+  SET stages = {
     {
-      title = "Moving Around"
-      text = "Used the 'A' and 'D' keys to move left and right across the screen."
+      SET title = "Moving Around"
+      SET text = "Used the 'A' and 'D' keys to move left and right across the screen."
       BEGIN test()
         RETURN player.walkTime > 1
       END test
     },
     {
-      title = "Shooting"
-      text = "Shooting is a fundamental part of the game, move the mouse around and click to shoot"
+      SET title = "Shooting"
+      SET text = "Shooting is a fundamental part of the game, move the mouse around and click to shoot"
       BEGIN test()
         RETURN mouse down
       END test
     }
     {
-      title = "Reloading"
-      text = "After using up bullets, try reloading by pressing 'r'. The gun is also automatically reloaded when you run out of bullets in the clip."
+      SET title = "Reloading"
+      SET text = "After using up bullets, try reloading by pressing 'r'. The gun is also automatically reloaded when you run out of bullets in the clip."
       BEGIN test()
         RETURN ('r' is pressed AND gun ammo is less than in the ammo clip)
       END test
     }
     {
-      title = "Zombies"
-      text = "Zombies will appear from either the left or right side and will attempt to get to you, try shooting a zombie until it dies."
+      SET title = "Zombies"
+      SET text = "Zombies will appear from either the left or right side and will attempt to get to you, try shooting a zombie until it dies."
       BEGIN test()
         RETURN (gun kills = 1)
       END test
       BEGIN setup()
-        Ak47.locked = False
+        SET Ak47.locked = False
         INSERT zombieClass() INTO zombieList
-        first zombie's attack damage = 0
+        SET first zombie's attack damage = 0
       END setup
     }
     {
-      title = "Gun Crate"
-      text = "Collecting gun crates gives you the gun for the rest of the wave. Collect the AK47 crate on the ground and equip it with the number keys."
+      SET title = "Gun Crate"
+      SET text = "Collecting gun crates gives you the gun for the rest of the wave. Collect the AK47 crate on the ground and equip it with the number keys."
       BEGIN test()
         RETURN inv selected gun == "ak47"
       END test
     }
     {
-      title = "Tutorial Complete!"
-      text = "All done, click the button in the top left to head back to the main menu and start a game with the new game button."
+      SET title = "Tutorial Complete!"
+      SET text = "All done, click the button in the top left to head back to the main menu and start a game with the new game button."
       BEGIN test()
         RETURN False
       END test
@@ -80,9 +80,9 @@ BEGIN tutorialClass()
     
   BEGIN update()
     IF mouse clicked AND mouseInRect(main menu button) THEN
-      player.health.cur = 0
-      main.state = "main"
-      mouseClicked = false
+      SET player.health.cur = 0
+      SET main.state = "main"
+      SET mouseClicked = false
 
     ELSE
       IF stages[stage].test() THEN
@@ -90,7 +90,7 @@ BEGIN tutorialClass()
       ENDIF
 
       FOR EACH zombie IN zombieList DO
-        zombie.update(dt)
+        RUN zombie.update(dt)
       END
 
       FOR EACH zombie IN zombieList DO
@@ -99,9 +99,9 @@ BEGIN tutorialClass()
         ENDIF
       END
 
-      inv.update()
+      RUN inv.update()
 
-      player.update(dt)
+      RUN player.update(dt)
 
     ENDIF
   END update
