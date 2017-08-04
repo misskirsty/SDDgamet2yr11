@@ -128,24 +128,101 @@ BEGIN mainClass()
 END mainClass
 
 
+BEGIN love.draw()
+  IF main.state == "main" THEN
+    RUN main.render()
+  ELSEIF main.state == "tutorial" THEN
+    RUN tut.render()
+  ELSE
+    DISPLAY backgroundImage
+  	FOR zombie IN zombieList DO
+    	RUN zombie.render()
+		END
+  	RUN player.render()
+  	FOR item IN droppedItems DO
+    	RUN item.render()
+		END
+		RUN inv.render()
+		IF shop is open THEN
+			RUN shop.render()
+		ENDIF
+		RUN esc.render()
+		DISPLAY game fps in top right
+		IF (main.state == "dead") THEN
+			RUN dead.render()
+		ENDIF
+  ENDIF
+END love.draw
 
 
+BEGIN love.update()
+	IF mouse is down THEN
+		IF NOT mouseDown THEN
+			SET mouseClicked = true
+		ELSE
+			SET mouseClicked = false
+		ENDIF
+		SET mouseDown = true
+	ELSE
+		SET mouseDown = false
+		SET mouseClicked = false
+	ENDIF
+	
+	IF main.state == "main" THEN
+		RUN main.update()
+	ENDIF
+	IF main.state == "tutorial" THEN
+		RUN tut.update(dt)
+	END
+	IF mouse.state == "game" THEN
+		RUN esc.update()
+		IF escape menu is NOT open THEN
+			IF shop is open THEN
+				RUN shop.update()
+			ELSE
+				RUN waveHandler.update(dt)
+				
+				FOR EACH zombie IN zombieList DO
+					RUN zombie.update(dt)
+				END
+				
+				FOR EACH zombie IN zombieList DO
+					IF zombie.deathTime >= length of the dying animation THEN
+						REMOVE zombie FROM zombieList
+					ENDIF
+				END
+				
+        FOR EACH item IN droppedItems DO
+          RUN item.update(dt)
+        END
+				FOR EACH item IN droppedItems DO
+					IF item.deleteMe THEN
+          	REMOVE item FROM droppedItems
+					ENDIF
+        END
+				
+				RUN inv.update()
+				RUN player.update(dt)
+			ENDIF
+		ENDIF
+		
+	ELSE IF main.state == "dead" THEN
+		FOR EACH zombie IN zombieList DO
+			RUN zombie.update(dt)
+		END
+		FOR EACH item IN droppedItems DO
+      RUN item.update(dt)
+    end
+		
+		RUN dead.update()
+	ENDIF
+END love.update
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+BEGIN mouseInRect(rect)
+	IF left side of rect <= mouse x pos AND mouse x pos <= right side of rect THEN
+		IF top of rect <= mouse y pos AND mouse y pos <= bottom of rect THEN
+			RETURN true
+		ENDIF
+	ENDIF
+END mouseInRect
