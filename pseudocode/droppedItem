@@ -2,129 +2,90 @@
 
 BEGIN droppedItemClass(zombie)
 
-  deleteMe = false
+  SET deleteMe = false
   
-  size = { w=120, h=120 }  
-  pos = { x=zombie.pos.x, y=900-260-self.size.h }
-  vel = -100
-  accel = 200
-  hitGround = false
-  dropTime = 0
+  SET size = { w=120, h=120 }  
+  SET pos = { x=zombie.pos.x, y=900-260-self.size.h }
+  SET vel = -100
+  SET accel = 200
+  SET hitGround = false
+  SET dropTime = 0
   
-  itemDropList = {"ammo"}
+  SET itemDropList = {"ammo"}
   IF main.state IS "tutorial" THEN
-    itemDropList = {}
+    SET itemDropList = {}
   ENDIF
   
   FOR EACH gun IN gunList DO
     IF gun is not locked AND gun is not owned THEN
-      
       IF gun name NOT IN itemDropList THEN
-        INSERT zombieClass() INTO zombieList
+        INSERT gun name INTO itemDropList
       END
-      
     END
   END 
   
+  SET name = random value FROM itemDroplist
   
-  stage = 1
-  stages = {
-    {
-      title = "Moving Around"
-      text = "Used the 'A' and 'D' keys to move left and right across the screen."
-      BEGIN test()
-        RETURN player.walkTime > 1
-      END test
-    },
-    {
-      title = "Shooting"
-      text = "Shooting is a fundamental part of the game, move the mouse around and click to shoot"
-      BEGIN test()
-        RETURN mouse down
-      END test
-    }
-    {
-      title = "Reloading"
-      text = "After using up bullets, try reloading by pressing 'r'. The gun is also automatically reloaded when you run out of bullets in the clip."
-      BEGIN test()
-        RETURN ('r' is pressed AND gun ammo is less than in the ammo clip)
-      END test
-    }
-    {
-      title = "Zombies"
-      text = "Zombies will appear from either the left or right side and will attempt to get to you, try shooting a zombie until it dies."
-      BEGIN test()
-        RETURN (gun kills = 1)
-      END test
-      BEGIN setup()
-        Ak47.locked = False
-        INSERT zombieClass() INTO zombieList
-        first zombie's attack damage = 0
-      END setup
-    }
-    {
-      title = "Gun Crate"
-      text = "Collecting gun crates gives you the gun for the rest of the wave. Collect the AK47 crate on the ground and equip it with the number keys."
-      BEGIN test()
-        RETURN selected gun from inventory = ak47
-      END test
-    }
-    {
-      title = "Tutorial Complete!"
-      text = "All done, click the button in the top left to head back to the main menu and start a game with the new game button."
-      BEGIN test()
-        RETURN False
-      END test
-    }
-  }
+  IF name == "ammo" THEN
+    SET image = ammoDropImage
+  ELSE
+    SET image = gunList[name].dropImage
+  ENDIF
   
-  BEGIN render(dt)
-    Display background image
-    
-    FOR EACH zombie IN zombieList DO
-      Display zombie
-    END 
-    
-    Display player image
-    
-    FOR EACH item IN droppedItems DO
-      Display item
-    END 
-    
-    Display inventory
-    
-    Display main menu button
-    IF mouseInRect(main menu button) THEN
-      Display transparent colour over button
+  BEGIN render()
+    SET yBob = math.sin(dropTime) * 30
+    SET crateTransparency = 255
+    IF crate exists for >= 10 seconds THEN
+      SET crateTransparency = math.floor(math.floor(255 * (math.sin((dropTime-10)*(dropTime-10)/2)+1)/2))
+      IF crate exists for >= 20 seconds THEN
+        SET deleteMe = true
+      ENDIF
     ENDIF
     
-    Display tutorial box
-    
-  BEGIN update()
-    IF mouse clicked AND mouseInRect(main menu button) THEN
-      player.health.cur = 0
-      main.state = "main"
-      mouseClicked = false
-
+    SET game transparency = crateTransparancy
+    DISPLAY crate image at (pos.x, pos.y)
+    DISPLAY item image centered on crate image
+  END render
+  
+  BEGIN update(dt)
+    IF item NOT hitGround THEN
+      ADD vel*dt TO pos.y
+      ADD accel*dt TO vel
+      IF item pos.y > ground level THEN
+        SET item pos.y = ground level
+        SET item hitGround = true
+      END
     ELSE
-      IF stages[stage].test() THEN
-        INCREMENT stage
-      ENDIF
-
-      FOR EACH zombie IN zombieList DO
-        zombie.update(dt)
-      END
-
-      FOR EACH zombie IN zombieList DO
-        IF zombie.deathTime >= zombie.deathTurningTime THEN
-          REMOVE zombie FROM zombieList
+      ADD dt TO dropTime
+    END
+   
+    IF right side of item > left side of player THEN
+      IF left side of item > right side of player THEN
+        IF name == "ammo" THEN   
+          SET selected guns ammo = selected guns clip size
+          SET selected guns backup ammo = selected guns max ammo
+          SET deleteMe = true
+        ELSE
+          SET gunList[name].holding = true
+          SET deleteMe = true
         ENDIF
-      END
-
-      inv.update()
-
-      player.update(dt)
-
+        PLAY cratePickupSound
+      ENDIF
     ENDIF
   END update
-END tutorialClass
+END droppedItemClass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
