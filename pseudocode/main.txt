@@ -192,14 +192,14 @@ BEGIN love.update()
 					ENDIF
 				END
 				
-        FOR EACH item IN droppedItems DO
-          RUN item.update(dt)
-        END
+				FOR EACH item IN droppedItems DO
+				  RUN item.update(dt)
+				END
 				FOR EACH item IN droppedItems DO
 					IF item.deleteMe THEN
-          	REMOVE item FROM droppedItems
+          					REMOVE item FROM droppedItems
 					ENDIF
-        END
+        			END
 				
 				RUN inv.update()
 				RUN player.update(dt)
