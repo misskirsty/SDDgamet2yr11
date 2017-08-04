@@ -1,24 +1,24 @@
 #Tutorial Pseudocode
 
 BEGIN tutorialClass()
-  Font1 = new font
-  Font2 = new font
-  Font3 = new font
+  font1 = new font
+  font2 = new font
+  font3 = new font
   
-  Stage = 1
-  Stages = {
+  stage = 1
+  stages = {
     {
       title = "Moving Around"
       text = "Used the 'A' and 'D' keys to move left and right across the screen."
       BEGIN test()
-        RETURN Walk Time > 1
+        RETURN player.walkTime > 1
       END test
     },
     {
       title = "Shooting"
       text = "Shooting is a fundamental part of the game, move the mouse around and click to shoot"
       BEGIN test()
-        RETURN IF mouse clicked
+        RETURN mouse down
       END test
     }
     {
@@ -37,7 +37,7 @@ BEGIN tutorialClass()
       BEGIN setup()
         Ak47.locked = False
         INSERT zombieClass() INTO zombieList
-        First zombie attack damage = 0
+        first zombie's attack damage = 0
       END setup
     }
     {
