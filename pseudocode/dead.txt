@@ -1,0 +1,57 @@
+# deadClass() pseudocode
+
+BEGIN deadClass()
+  SET font1 = new Font()
+  SET font2 = new Font()
+  SET guiRect = {x=300, y=50, w=1000, h=700}
+  
+  SET buttons = {
+    {
+      SET text = "Restart"
+      BEGIN onclick()
+        RUN waveHandler.restartGame()
+      END
+    },
+    {
+      SET text = "Main Menu"
+      BEGIN onclick()
+        SET isOpen = False
+        SET main.state = "main"
+      END
+    },
+    {
+      SET text = "Quit Game"
+      BEGIN onclick()
+        RUN event.quit()
+      END
+    }
+  }
+  BEGIN render()
+    DISPLAY Full screen darken
+    DISPLAY Main background rectangle
+    DISPLAY Paused title
+    SET Font = font2
+    SET Color = (255,255,255)
+    FOR button IN buttons DO
+      SET buttonRect = {x=self.guiRect.x, y=self.guiRect.y + 250 + (i-1)*150, w=self.guiRect.w, h=150}
+      DISPLAY button text
+      IF mouseInRect THEN
+        DISPLAY semi-transparent rectangle over button rect
+      ENDIF
+    END
+  END
+  
+  BEGIN update()
+    FOR button IN buttons DO
+      buttonRect = {x=self.guiRect.x, y=self.guiRect.y + 240 + (i-1)*150, w=self.guiRect.w, h=150}
+      IF mouseInRect(buttonRect) THEN
+        RUN button.onclick()
+        SET mouseClicked = False
+        PLAY buttonClickedSound
+        BREAK
+      END
+    END
+  END
+END
+        
+    
