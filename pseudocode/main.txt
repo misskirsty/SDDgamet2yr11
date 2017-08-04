@@ -211,8 +211,8 @@ BEGIN love.update()
 			RUN zombie.update(dt)
 		END
 		FOR EACH item IN droppedItems DO
-      RUN item.update(dt)
-    end
+      			RUN item.update(dt)
+    		END
 		
 		RUN dead.update()
 	ENDIF
