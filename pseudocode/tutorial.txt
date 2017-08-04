@@ -44,7 +44,7 @@ BEGIN tutorialClass()
       title = "Gun Crate"
       text = "Collecting gun crates gives you the gun for the rest of the wave. Collect the AK47 crate on the ground and equip it with the number keys."
       BEGIN test()
-        RETURN selected gun from inventory = ak47
+        RETURN inv selected gun == "ak47"
       END test
     }
     {
