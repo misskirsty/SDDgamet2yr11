@@ -17,7 +17,7 @@ NEXT Count
 
 FOR EACH zombie IN zombieList
  Display zombie
-END zombieList
+END
 
 
 WHILE Count <= 100
