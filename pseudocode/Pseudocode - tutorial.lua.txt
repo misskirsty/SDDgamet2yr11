@@ -1,0 +1,108 @@
+#Tutorial Pseudocode
+
+BEGIN tutorialClass()
+  SET font1 = new Font()
+  SET font2 = new Font()
+  SET font3 = new Font()
+  
+  SET stage = 1
+  SET stages = {
+    {
+      SET title = "Moving Around"
+      SET text = "Used the 'A' and 'D' keys to move left and right across the screen."
+      BEGIN test()
+        RETURN player.walkTime > 1
+      END test
+    },
+    {
+      SET title = "Shooting"
+      SET text = "Shooting is a fundamental part of the game, move the mouse around and click to shoot"
+      BEGIN test()
+        RETURN mouse down
+      END test
+    }
+    {
+      SET title = "Reloading"
+      SET text = "After using up bullets, try reloading by pressing 'r'. The gun is also automatically reloaded when you run out of bullets in the clip."
+      BEGIN test()
+        RETURN ('r' is pressed AND gun ammo is less than in the ammo clip)
+      END test
+    }
+    {
+      SET title = "Zombies"
+      SET text = "Zombies will appear from either the left or right side and will attempt to get to you, try shooting a zombie until it dies."
+      BEGIN test()
+        RETURN (gun kills = 1)
+      END test
+      BEGIN setup()
+        SET Ak47.locked = False
+        INSERT zombieClass() INTO zombieList
+        SET first zombie's attack damage = 0
+      END setup
+    }
+    {
+      SET title = "Gun Crate"
+      SET text = "Collecting gun crates gives you the gun for the rest of the wave. Collect the AK47 crate on the ground and equip it with the number keys."
+      BEGIN test()
+        RETURN inv selected gun == "ak47"
+      END test
+    }
+    {
+      SET title = "Tutorial Complete!"
+      SET text = "All done, click the button in the top left to head back to the main menu and start a game with the new game button."
+      BEGIN test()
+        RETURN False
+      END test
+    }
+  }
+  
+  BEGIN render(dt)
+    DISPLAY background image
+    
+    FOR EACH zombie IN zombieList DO
+      DISPLAY zombie
+    END 
+    
+    DISPLAY player image
+    
+    FOR EACH item IN droppedItems DO
+      DISPLAY item
+    END 
+    
+    DISPLAY inventory
+    
+    DISPLAY main menu button
+    IF mouseInRect(main menu button) THEN
+      DISPLAY transparent colour over button
+    ENDIF
+    
+    DISPLAY tutorial box
+    
+  BEGIN update()
+    IF mouse clicked AND mouseInRect(main menu button) THEN
+      SET player.health.cur = 0
+      SET main.state = "main"
+      SET mouseClicked = false
+
+    ELSE
+      IF stages[stage].test() THEN
+        INCREMENT stage
+      ENDIF
+
+      FOR EACH zombie IN zombieList DO
+        RUN zombie.update(dt)
+      END
+
+      FOR EACH zombie IN zombieList DO
+        IF zombie.deathTime >= length of the dying animation THEN
+          REMOVE zombie FROM zombieList
+        ENDIF
+      END
+
+      RUN inv.update()
+
+      RUN player.update(dt)
+
+    ENDIF
+  END update
+END tutorialClass

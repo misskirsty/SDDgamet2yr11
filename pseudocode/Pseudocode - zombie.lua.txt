@@ -1,0 +1,198 @@
+# zombieClass() pseudocode
+
+BEGIN zombieClass()
+  SET size = {w=256, h=256}
+  SET pos = {x={-self.size.w, 1600}, y=800-356}
+  SET pox.x = pos.x[math.random(1,2)]
+  SET collisionBody = {x=60, y=106, w=130, h=150}
+  SET collisionHead = {x=91, y=40, w=100, h=100}
+  
+  SET image_zombie_torso = new imageClass()
+  SET image_zombie_arm_back = new imageClass()
+  SET image_zombie_arm_front = new imageClass()
+  SET image_zombie_leg_back = new imageClass()
+  SET image_zombie_leg_front = new imageClass()
+  
+  SET speed = 30 + math.random()(25 + waveHandler.waveNum(2
+  SET health = {cur=0, max=50 + waveHandler.waveNum*10}
+  SET health.cur = health.max
+  SET facingDirection = nil
+  
+  SET collisionBodyScreenPos = {x=nil, y=nil}
+  SET collisionHeadScreenPos = {x=nil, y=nil}
+  
+  SET knockbackVelocity = 0
+  SET knockbackFriction = 200
+  
+  SET attackTime = 2
+  SET attackCooldown = 0
+  SET attackDmg = 10 + waveHandler.waveNum
+  SET atackSounds = { three different attack sounds}
+  
+  SET gronTimer = 0 + math.random() * 18
+  SET groanSounds = {three different groan sounds}
+  
+  SET dieSounds = {three different die sounds}
+  SET hitSounds = {three different hit sounds}
+  
+  SET aliveTIme = 0
+  SET deathTIme = 0
+  SET deathTurningTime = 2
+  SET deathSinkingTime = 1.5
+  
+  SET canvas = newCanvas(256,256)
+  
+  BEGIN render()
+    SET touchingPlayer = RUN touchingPlayer()
+    SET armSwingFront = nil
+    SET armSwingBack = nil
+    IF touchingPlayer AND health.cur > 0 THEN
+      SET armSwingFront = math.sin(self.aliveTime*5) * 0.5 + 0.3
+    ELSE
+      SET armSwingFront = math.sin(self.aliveTime*2) * 0.2
+    ENDIF
+    SET armSwingBack = -armSwingFront
+    
+    SET deathRotation = 0
+    SET deathSink = 0
+    SET deathTransparency = 255
+    IF health.cur <= 0 THEN
+      IF deathTime < deathTurningTime THEN
+        SET deathRotation = math.pi*0.5 * math.pow((-math.cos(math.pi x 0.5 x deathTime/deathTurningTime)+1),2)
+      ELSE
+        SET deathRotation = math.pi*0.5
+      ENDIF
+      IF facingDirection = "right" THEN
+        SET deathRotation = -deathRotation
+      END
+      
+      SET armSwingFront = armSwingFront + deathRotation
+      SET armSwingBack = armSwingBack + deathRotation
+        
+        IF deathTime >= deathTurningTime THEN
+          SET deathSink = (deathTime - deathTurningTime) * 30
+          SET deathTransparency = math.floor((deathSinkingTime - (deathTime - deathTurningTime)) ( 255)
+          IF (deathTransparency < 0) THEN
+            deathTransparency = 0
+          ENDIF
+        ENDIF
+      END
+      SET Canvas = canvas
+      DISPLAY clear the canvas
+      SET BlendMode = "alpha"
+      SET Color = (255,255,255)
+      IF facingDirection = "right" THEN
+        SET backLegOffset = {x=-math.cos(aliveTime*2)*3, y=-math.sin(aliveTime*2)*2}
+        DISPLAY image_zombie_leg_back.render(backLegOffset.x, backLegOffset.y, false, 0)
+        SET frontLegOffset = {x=math.cos(aliveTime*2)*3, y=math.sin(aliveTime*2)*2}
+        DISPLAY image_zombie_leg_front.render(frontLegOffset.x, frontLegOffset.y, false, 0)
+        DISPLAY image_zombie_arm_back.render(size.w*0.53, size.h*0.53, false, armSwingBack)
+        DISPLAY image_zombie_torso.render(0, 0, false, 0)
+        DISPLAY image_zombie_arm_front.render(size.w*0.35, size.h*0.56, false, armSwingFront)
+      ELSE
+        SET backLegOffset = {x=-math.sin(aliveTime*2)*3, y=-math.cos(aliveTime*2)*2}
+        DISPLAY image_zombie_leg_back.render(backLegOffset.x, backLegOffset.y, true, 0)
+        SET frontLegOffset = {x=math.sin(aliveTime*2)*3, y=math.cos(aliveTime*2)*2}
+        DISPLAY image_zombie_leg_front.render(frontLegOffset.x, frontLegOffset.y, true, 0)
+        DISPLAY image_zombie_arm_back.render(-size.w*0.53, size.h*0.53, true, armSwingBack)
+        DISPLAY image_zombie_torso.render(0, 0, true, 0)
+        DISPLAY image_zombie_arm_front.render(-size.w*0.35, size.h*0.56, true, armSwingFront)
+      END
+      DISPLAY draw zombie canvas onto screen
+      IF False THEN
+        DISPLAY render collison boundary body rectangle
+        DISPLAY render collison boundary head rectangle
+      ENDIF
+      IF False THEN
+        DISPLAY Render health box above head
+      END
+    END
+    
+  BEGIN update()
+    ADD dt TO aliveTime
+    ADD knockbackVelocity * dt TO pox.x
+    IF math.abs(knockbackVelocity) <= knockbackFriction * dt THEN
+      SET knockbackVelocity = 0
+    ELSE
+      IF knockbackVelocity > 0 THEN
+        SUBTRACT knockbackFriction * dt FROM knockbackVelocity
+      ELSEIF knockbackVelocity < 0 THEN 
+        ADD knockbackFriction * dt TO knockbackVelocity
+      ENDIF
+    ENDIF
+      
+    IF health.cur <= 0 THEN
+      ADD dt TO deathTime
+    ELSE
+      SET touchingPlayer = RUN touchingPlayer()
+      SET moveSpeed = speed
+      IF touchingPlayer THEN
+        SET moveSpeed = 0
+      ENDIF
+        
+      IF pos.x + size.w/2 < player.pox.x + player.size.w/2 THEN
+        SET facingDirection = "right"
+        ADD moveSpeed * dt TO pos.x
+      ELSE
+        SET facingDirection = "left"
+        SUBTRACT moveSpeed*dt FROM pos.x
+      ENDIF
+        
+      SET collisionBodyScreenPos = {x=nil, y=pos.y + collisionBody.y}
+      SET collisionHeadScreenPos = {x=nil, y=pos.y + collisionHead.y}
+        
+      IF facingDirection = "right" THEN
+        SET collisonBodyScreenPos.x = pos.x + collisonBody.x
+        SET collisonHeadScreenPos.x = pos.x + collisonHead.x
+      ELSE
+        SET collisonBodyScreenPos.x = pos.x + size.w - collisonBody.x - collisonBody.w
+        SET collisonHeadScreenPos.x = pos.x + size.w - collisonHead.x - collisonHead.w
+      ENDIF
+        
+      IF attackCooldown >0 THEN
+        SUBTRACT dt FROM attackCooldown
+      ELSE
+        IF touchingPlayer THEN
+          SET attackCooldown = attackTime
+          SUBTRACT attackDmg FROM player.health.cur
+          IF player.health.cur < 0 THEN
+            SET player.health.cur = 0
+          ENDIF
+          SET randomAttackNose = math.random(length of attackSounds)
+          PLAY attackSounds[sound chosen]
+        ENDIF
+      ENDIF
+        
+      SUBTRACT dt FROM groanTimer
+      IF groanTimer <= 0 THEN
+        groanTimer  = 5 + math.random() * 10
+        SET randomGroanNoise = math.random(length of groanSounds)
+        PLAY groanSounds, random noise chosen
+      ENDIF
+    ENDIF
+  END
+  
+  BEGIN isHit()
+    SET headRect = {x=collisionHeadScreenPos.x, y=collisionHeadScreenPos.y, w=collisionHead.w, h=collisionHead.h}
+    SET headCollision = player.shootingRect(headRect)
+    IF headCollison is NOT False THEN
+      RETURN {part="head", x=headCollision.x, y=headCollision.y}
+    ELSE
+      SET bodyRect = {x=collisionBodyScreenPos.x, y=collisionBodyScreenPos.y, w=collisionBody.w, h=collisionBody.h}
+      SET bodyCollision = player.shootingRect(bodyRect)
+      IF bodyCollison is NOT False THEN
+        RETURN {part="body", x=bodyCollision.x, y=bodyCollision.y}
+      ENDIF
+    ENDIF
+    RETURN False
+  END
+  
+  BEGIN touchingPlayer()
+    IF (player.pos.x + player.collisionBody.x + player.collisionBody.w > pos.x + collisionBody.x) THEN
+      IF (player.pos.x + player.collisionBody.x < pos.x + collisionBody.x + collisionBody.w) THEN
+        RETURN True
+      ENDIF
+    ENDIF
+    RETURN False
+  END
+END

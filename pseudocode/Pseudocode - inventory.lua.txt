@@ -1,0 +1,50 @@
+#inventoryClass() pseudocode
+
+BEGIN inventoryClass()
+
+  SET selectedGun = "pistol"
+  SET font1 = new Font()
+  
+  BEGIN render()
+    FOR gun IN gunList DO
+      SET imagePos = {x=400+(gun.num-1)*136, y=750}
+      DISPLAY filled rectangle origin at imagePos.x and imagePos.y
+      
+      IF gun name == selectedGun THEN
+        SET graphics colour = (70, 70, 70)
+        SET graphics line width = 8
+      ELSE
+        SET graphics colour = (30,30,30)
+        SET graphics line width = 5
+      ENDIF
+      DISPLAY lined rectangle origin at imagePos.x and imagePos.y
+      
+      IF gun is locked THEN
+        DISPLAY lockImageInv
+      ELSEIF NOT gunList[gun name].holding THEN
+        SET graphics colour = (0,0,0)
+        DISPLAY gun.lowerImage
+        SET graphics colour = (255,255,255)
+      ELSE
+        DISPLAY gun.lowerImage
+        DISPLAY number used to select gun
+        DISPLAY ammo stats on each image
+      ENDIf
+    END
+  END render
+  
+  BEGIN update()
+    FOR gun IN gunList DO
+      IF pressing gun.num key on keyboard AND player is NOT reloading THEN
+        IF gun is locked THEN
+          print("Cannot switch to a gun that is locked.")
+        ELSEIF NOT player owns gun THEN
+          print("Cannot switch to a gun you dont own.")
+        ELSE
+          print("Switching to " + gunName)
+          SET inv.selectedGun = gunName
+        ENDIF
+      ENDIF
+    END
+  END update
+END inventoryClass

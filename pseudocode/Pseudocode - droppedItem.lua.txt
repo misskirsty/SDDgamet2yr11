@@ -1,0 +1,76 @@
+#droppedItem Pseudocode
+
+BEGIN droppedItemClass(zombie)
+
+  SET deleteMe = false
+  
+  SET size = { w=120, h=120 }  
+  SET pos = { x=zombie.pos.x, y=900-260-self.size.h }
+  SET vel = -100
+  SET accel = 200
+  SET hitGround = false
+  SET dropTime = 0
+  
+  SET itemDropList = {"ammo"}
+  IF main.state IS "tutorial" THEN
+    SET itemDropList = {}
+  ENDIF
+  
+  FOR EACH gun IN gunList DO
+    IF gun is not locked AND gun is not owned THEN
+      IF gun name NOT IN itemDropList THEN
+        INSERT gun name INTO itemDropList
+      END
+    END
+  END 
+  
+  SET name = random value FROM itemDroplist
+  
+  IF name == "ammo" THEN
+    SET image = ammoDropImage
+  ELSE
+    SET image = gunList[name].dropImage
+  ENDIF
+  
+  BEGIN render()
+    SET yBob = math.sin(dropTime) * 30
+    SET crateTransparency = 255
+    IF crate exists for >= 10 seconds THEN
+      SET crateTransparency = math.floor(math.floor(255 * (math.sin((dropTime-10)*(dropTime-10)/2)+1)/2))
+      IF crate exists for >= 20 seconds THEN
+        SET deleteMe = true
+      ENDIF
+    ENDIF
+    
+    SET game transparency = crateTransparancy
+    DISPLAY crate image at (pos.x, pos.y)
+    DISPLAY item image centered on crate image
+  END render
+  
+  BEGIN update(dt)
+    IF item NOT hitGround THEN
+      ADD vel*dt TO pos.y
+      ADD accel*dt TO vel
+      IF item pos.y > ground level THEN
+        SET item pos.y = ground level
+        SET item hitGround = true
+      END
+    ELSE
+      ADD dt TO dropTime
+    END
+   
+    IF right side of item > left side of player THEN
+      IF left side of item > right side of player THEN
+        IF name == "ammo" THEN   
+          SET selected guns ammo = selected guns clip size
+          SET selected guns backup ammo = selected guns max ammo
+          SET deleteMe = true
+        ELSE
+          SET gunList[name].holding = true
+          SET deleteMe = true
+        ENDIF
+        PLAY cratePickupSound
+      ENDIF
+    ENDIF
+  END update
+END droppedItemClass

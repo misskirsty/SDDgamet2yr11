@@ -1,0 +1,99 @@
+# shopClass() pseudocode
+
+BEGIN shopClass()
+  SET isOpen = False 
+  SET clickGun = "pistol"
+  
+  SET font1 = new Font()
+  SET font2 = new Font()
+  SET font3 = new Font()
+  SET font4 = new Font()
+  SET font5 = new Font()
+  SET font6 = new Font()
+  
+  SET font_NextWave = new Font()
+  
+  SET continueButton = {
+    rect = {x=1080, y=650, w=370, h=100}
+    BEGIN onclick()
+      SET isOpen = False
+      RUN waveHandler.startNextWave()
+    END
+   }
+  
+  BEGIN render()
+    DISPLAY shop background
+    DISPLAY next wave button
+    IF mouseInREct(continueButton.rect) THEN
+      DISPLAY semi-transparent rectangle over button rect
+    ENDIF
+    SET Color = (255,255,255)
+    SET Font = font2
+    FOR gun IN gunList DO
+      IF gun.locked THEN
+        SET Color = (0,0,0)
+        DISPLAY gun.shopImage
+        SET Color = (255,255,255)
+        DISPLAY lockImageShop
+      ELSE
+        DISPLAY gun.shopImage
+      ENDIF
+      
+      IF mouseInRect(imageRect) THEN
+        DISPLAY darkened gun boxes on hover
+      ELSEIF gunName = clickedGun THEN
+        DISPLAY slightly darkened gun boxes on selected gun
+      ENDIF
+      
+      IF gunName = clickedGun THEN
+        SET Color = (100,100,100)
+        SET LineWidth = 8
+      ELSE
+        SET Color = (0,0,0)
+        SET LineWidth = 4
+      END
+      DISPLAY lined rectangle
+      SET Color = (255,255,255)
+      DISPLAY gun names above image
+    END
+    
+    DISPLAY little gun specific info box
+    DISPLAY inner stats
+    IF gunList[clickedGun].perclick THEN
+      love.graphics.printf("Type: Semi-automatic", 200, 675, 600, "left")
+    ELSE
+      love.graphics.printf("Type: Automatic", 200, 675, 600, "left")
+    ENDIF
+    
+    SET Font = font5
+    IF gunList[clickedGun].locked THEN
+      SET Color = (255,0,0)
+      love.graphics.printf("LOCKED", 500, 535, 430, "center")
+      SET Font = font6
+      love.graphics.printf("Unlocked at Wave " .. gunList[self.clickedGun].num, 500, 620, 430, "center")
+    ELSE
+      SET Color = (0,150,0)
+      love.graphics.printf("UNLOCKED", 500, 535, 430, "center")
+      SET Font = font6
+      love.graphics.printf("Kills with gun: " .. gunList[self.clickedGun].kills, 500, 620, 430, "center")
+    END
+    SET Color = (255,255,255)
+  END
+  
+  BEGIN update()
+    IF mouse is clicked THEN
+      IF mouseInRect(continueButton.rect) THEN
+        RUN continueButton.onclick()
+        PLAY buttonClickSound
+      ELSE
+        FOR gun IN gunList DO
+          imageRect = {x=170 + (gun.num-1)*210 + 25, y=250, w=160, h=160}
+          IF mouseInREct(imageRect) THEN
+            SET clickedGun = gunName
+            PLAY buttonClickSound
+          ENDIF
+        END
+      END
+    END
+  END
+END

@@ -1,0 +1,122 @@
+#Wave pseudocode
+BEGIN waveClass()
+  SET font1 = new Font()
+  SET waveNum = 0
+  SET startTime = 0
+  SET zombieSpawnTime = startTime
+  
+  SET waveInfo = { count = nil, spawnTime = nil }
+  
+  SET waveTime = 0
+  
+  SET textFadeIn = 2
+  
+  SET TextFadeOut = 1
+  
+  SET waveStartSound = new AudioSource()
+  SET waveEndSound = new AudioSource()
+  
+  BEGIN restartGame
+    SET main.state = "game"
+    
+    SET player.health.cur = player.health.max
+    
+    SET player.pos.x = 800 - player.size.w/2
+    
+    SET inv.selectedGun = "pistol"
+    
+    SET shop.isOpen = False
+    
+    SET shop.clickGun = "pistol"
+    
+    FOR gun IN gunList DO
+      SET gun.ammo.cur = gun.ammo.clip
+      SET gun.ammo.backup = gun.ammo.max
+      SET gun.kills = 0
+      IF gunName = "pistol" THEN
+        SET gun.locked = True
+        SET gun.holding = False
+      ENDIF
+    END
+    
+    SET zombieList = {}
+    SET droppedItems = {}
+    SET coins = {}
+    SET waveNum = 0
+    RUN startNextWave()
+  END
+  
+  BEGIN startNextWave()
+    SET player.health.cur = player.health.max
+    SET player.shotCooldown = 0
+    SET player.flashCooldown = 0 
+    SET player.reloadCooldown = 0
+    SET player.walkTime = 0
+    
+    PLAY waveStartSound
+    
+    INCREMENT waveNum
+    SET zombieSpawnTime = startTime
+    SET waveTime = 0
+    
+    SET waveInfo.count = 10 x waveNum
+    SET waveInfo.spawnTime = 2 - ( 0.1 x waveNum)
+    IF waveInfo.spawnTime < 0.5 THEN
+      SET waveInfo.spawnTime = 0.5
+    ENDIF
+  END
+  
+  BEGIN endWave()
+    PLAY waveEndSound
+    
+    SET shop.isOpen = True
+    SET shop.clickedGun = "pistol"
+    
+    SET inv.selectedGun = "pistol"
+    FOR gun IN gunList DO
+      IF gunName does not = "pistol" THEN
+        SET gun.holding = False
+      END
+      SET gun.ammo.cur = gun.ammo.clip
+      SET gun.ammo.backup = gun.ammo.max
+    END
+    SET droppedItems = {}
+    
+    FOR gun IN gunList DO
+      IF gun.num == waveNum THEN
+        SET gun.locked = False
+      ENDIF
+    END
+  END
+  
+  BEGIN update()
+    ADD dt TO waveTime
+    IF waveInfo.count = 0 THEN
+      IF length of zombieList = 0 THEN
+        RUN endWave()
+      ENDIF
+    ELSE
+    IF zombieSpawnTIme <= 0 THEN
+      SET zombieSpawnTime = waveInfo.spawnTime
+      DECREMENT waveInfo.count
+      INSERT zombieClass() INTO zombieList
+    ELSE
+      SUBTRACT dt FROM zombieSpawnTime
+    ENDIF
+  END
+
+
+  BEGIN render()
+    IF waveTime < 5 THEN
+      SET textTransparency = 255
+
+      IF waveTime < textFadeIn THEN
+        SET textTransparency = math.floor(255*(self.waveTime/self.textFadeIn))
+      ELSEIF waveTime > 5 - textFadeOut THEN
+        SET textTransparency = math.floor(255*(1 - (self.waveTime-(5-self.textFadeOut))/self.textFadeOut))
+      ENDIF
+
+      DISPLAY waveNum in middle of screen
+    ENDIF
+  END
+END
