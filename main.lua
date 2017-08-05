@@ -31,7 +31,7 @@ function love.load()
   crateDropImage = imageClass("crate.png", 120, 120, 0, 0)
 	
 	backgroundImage = imageClass("background.png", 1600, 900, 0, 0)
-
+  mainBackgroundImage = imageClass("main_menu_background.jpg", 1600, 900, 0, 0)
   
   --- Menu stuff
   main = mainClass()
@@ -96,7 +96,7 @@ function mainClass()
           main.state = "game"
           
           self.playingMusic = false
-          self.menu_music:setVolume(0.15)
+          self.menu_music:setVolume(0.2)
           --self.menu_music:stop()
         end
         
@@ -107,7 +107,7 @@ function mainClass()
       onclick = function()
         waveHandler.restartGame()
         self.playingMusic = false
-        self.menu_music:setVolume(0.15)
+        self.menu_music:setVolume(0.2)
         --self.menu_music:stop()
       end
     },
@@ -129,7 +129,7 @@ function mainClass()
 
   self.render = function()
    
-    love.graphics.setBackgroundColor(76, 76, 76)
+    mainBackgroundImage.render(0, 0, false, 0)	-- Render the background
     
     love.graphics.setFont(self.font1)
     love.graphics.printf("Lua Zombie Game", 0, 50, 1600, "center")
