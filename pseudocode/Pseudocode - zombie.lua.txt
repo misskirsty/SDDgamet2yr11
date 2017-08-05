@@ -58,7 +58,7 @@ BEGIN zombieClass()
     SET deathTransparency = 255
     IF health.cur <= 0 THEN
       IF deathTime < deathTurningTime THEN
-        SET deathRotation = math.pi*0.5 * math.pow((-math.cos(math.pi x 0.5 x deathTime/deathTurningTime)+1),2)
+        SET deathRotation = math.pi*0.5 * math.pow((-math.cos(math.pi * 0.5 * deathTime/deathTurningTime)+1),2)
       ELSE
         SET deathRotation = math.pi*0.5
       ENDIF
